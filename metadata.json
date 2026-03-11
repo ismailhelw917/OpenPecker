@@ -1,5 +1,5 @@
 {
   "name": "OpenPecker",
-  "description": "",
+  "description": "Master chess openings through deliberate repetition and spaced repetition.",
   "requestFramePermissions": []
 }

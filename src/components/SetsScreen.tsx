@@ -17,8 +17,10 @@ export default function SetsScreen({ onGoToTrain, onResume }: SetsScreenProps) {
   const completedSets = savedSets.filter(s => s.status === 'completed');
 
   const handleResume = (set: SavedSet) => {
+    console.log('Resuming set:', set.openingDisplay, 'Puzzles:', set.puzzles.length);
     setPuzzles(set.puzzles);
     setCurrentPuzzleIndex(0); // Or resume from where they left off if we tracked it per set
+    console.log('Puzzles set in store, calling onResume');
     onResume();
   };
 

@@ -1,31 +1,99 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
+import { BigQuery } from "@google-cloud/bigquery";
 import path from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
 import Stripe from "stripe";
 import Database from "better-sqlite3";
+import crypto from "crypto";
 import { sampleRouter } from "./routes/sample";
 import { chessRouter } from "./routes/chess";
+import fs from "fs";
+
+// Global error handlers to prevent crashes
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception thrown:', err);
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Initialize BigQuery client lazily
+let bigquery: BigQuery | null = null;
+function getBigQuery() {
+  if (!bigquery) {
+    bigquery = new BigQuery();
+  }
+  return bigquery;
+}
+
 // Initialize SQLite database for puzzles
 const db = new Database('puzzles.db');
-db.pragma('journal_mode = WAL');
+try {
+  db.pragma('journal_mode = WAL');
 
-// Create puzzles table if it doesn't exist
-db.exec(`
-  CREATE TABLE IF NOT EXISTS puzzles (
-    id TEXT PRIMARY KEY,
-    theme TEXT NOT NULL,
-    data TEXT NOT NULL
-  );
-  CREATE INDEX IF NOT EXISTS idx_theme ON puzzles(theme);
-`);
+  // Check if we need to migrate the primary key to support multiple themes per puzzle
+  const tableInfo = db.pragma('table_info(puzzles)') as any[];
+  if (tableInfo.length > 0) {
+    const pkCount = tableInfo.filter(col => col.pk > 0).length;
+    if (pkCount === 1) {
+      console.log('Migrating puzzles table to composite primary key (id, theme)...');
+      db.exec(`
+        CREATE TABLE puzzles_new (
+          id TEXT,
+          theme TEXT NOT NULL,
+          data TEXT NOT NULL,
+          rating INTEGER,
+          PRIMARY KEY (id, theme)
+        );
+        INSERT OR IGNORE INTO puzzles_new (id, theme, data, rating) SELECT id, theme, data, rating FROM puzzles;
+        DROP TABLE puzzles;
+        ALTER TABLE puzzles_new RENAME TO puzzles;
+        CREATE INDEX IF NOT EXISTS idx_theme ON puzzles(theme);
+        CREATE INDEX IF NOT EXISTS idx_rating ON puzzles(rating);
+      `);
+    }
+  } else {
+    // Create puzzles table if it doesn't exist
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS puzzles (
+        id TEXT,
+        theme TEXT NOT NULL,
+        data TEXT NOT NULL,
+        rating INTEGER,
+        PRIMARY KEY (id, theme)
+      );
+      CREATE INDEX IF NOT EXISTS idx_theme ON puzzles(theme);
+      CREATE INDEX IF NOT EXISTS idx_rating ON puzzles(rating);
+    `);
+  }
 
-// Lazy initialize Stripe to avoid crash if key is missing
+  // Populate from puzzles_static.json if empty
+  const count = (db.prepare('SELECT COUNT(*) as count FROM puzzles').get() as any).count;
+  if (count === 0) {
+    console.log('Populating database from puzzles_static.json...');
+    const data = fs.readFileSync(path.join(__dirname, 'puzzles_static.json'), 'utf8');
+    const puzzles = JSON.parse(data);
+    const insertStmt = db.prepare('INSERT OR IGNORE INTO puzzles (id, theme, rating, data) VALUES (?, ?, ?, ?)');
+    let populatedCount = 0;
+    for (const puzzle of puzzles) {
+      if (puzzle.puzzle && puzzle.puzzle.themes) {
+        for (const theme of puzzle.puzzle.themes) {
+          insertStmt.run(puzzle.puzzle.id, theme, puzzle.puzzle.rating, JSON.stringify(puzzle));
+          populatedCount++;
+        }
+      }
+    }
+    console.log(`Populated ${puzzles.length} unique puzzles (${populatedCount} theme-entries).`);
+  }
+} catch (err) {
+  console.error('Database initialization failed:', err);
+}
 let stripeClient: Stripe | null = null;
 function getStripe() {
   if (!stripeClient) {
@@ -40,6 +108,21 @@ function getStripe() {
 }
 
 async function startServer() {
+  // Verify schema
+  try {
+    const info = db.pragma('table_info(puzzles)') as any[];
+    const hasRating = info.some(col => col.name === 'rating');
+    if (!hasRating) {
+      console.log('Migrating: Adding rating column to puzzles table');
+      db.exec('ALTER TABLE puzzles ADD COLUMN rating INTEGER');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_rating ON puzzles(rating)');
+    }
+    const totalPuzzles = (db.prepare('SELECT COUNT(*) as count FROM puzzles').get() as any).count;
+    console.log(`[SERVER] Reservoir contains ${totalPuzzles} puzzles.`);
+  } catch (e) {
+    console.error('Schema verification failed:', e);
+  }
+
   const app = express();
   const PORT = 3000;
 
@@ -59,6 +142,188 @@ async function startServer() {
   app.use("/api/sample", sampleRouter);
   app.use("/api/chess", chessRouter);
 
+  // Auth Routes
+  app.post("/api/auth/register", (req, res) => {
+    const { username, email, password } = req.body;
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: { message: "Missing required fields", code: "MISSING_FIELDS" } });
+    }
+
+    try {
+      const salt = crypto.randomBytes(16).toString("hex");
+      const hash = crypto.scryptSync(password, salt, 64).toString("hex");
+      const passwordHash = `${salt}:${hash}`;
+      const id = crypto.randomUUID();
+
+      const stmt = db.prepare("INSERT INTO users (id, username, email, password_hash) VALUES (?, ?, ?, ?)");
+      stmt.run(id, username, email, passwordHash);
+
+      res.json({ data: { id, username, email, isPremium: false } });
+    } catch (error: any) {
+      if (error.code === "SQLITE_CONSTRAINT") {
+        return res.status(400).json({ error: { message: "Username or email already exists", code: "USER_EXISTS" } });
+      }
+      res.status(500).json({ error: { message: error.message, code: "REGISTER_ERROR" } });
+    }
+  });
+
+  app.post("/api/auth/login", (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: { message: "Missing email or password", code: "MISSING_FIELDS" } });
+    }
+
+    try {
+      const user = db.prepare("SELECT * FROM users WHERE email = ?").get(email) as any;
+      if (!user || !user.password_hash) {
+        return res.status(401).json({ error: { message: "Invalid email or password", code: "INVALID_CREDENTIALS" } });
+      }
+
+      const [salt, hash] = user.password_hash.split(":");
+      const loginHash = crypto.scryptSync(password, salt, 64).toString("hex");
+
+      if (loginHash !== hash) {
+        return res.status(401).json({ error: { message: "Invalid email or password", code: "INVALID_CREDENTIALS" } });
+      }
+
+      res.json({ data: { id: user.id, username: user.username, email: user.email, isPremium: user.is_premium === 1 } });
+    } catch (error: any) {
+      res.status(500).json({ error: { message: error.message, code: "LOGIN_ERROR" } });
+    }
+  });
+
+  app.get("/api/user/me", (req, res) => {
+    const userId = req.query.userId as string;
+    if (!userId) {
+      return res.status(401).json({ error: { message: "Not authenticated", code: "UNAUTHORIZED" } });
+    }
+
+    try {
+      const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId) as any;
+      if (!user) {
+        return res.status(404).json({ error: { message: "User not found", code: "NOT_FOUND" } });
+      }
+      res.json({ data: { id: user.id, username: user.username, email: user.email, isPremium: user.is_premium === 1 } });
+    } catch (error: any) {
+      res.status(500).json({ error: { message: error.message, code: "USER_FETCH_ERROR" } });
+    }
+  });
+
+  // BigQuery Puzzle Query
+  app.get("/api/bigquery/puzzles", async (req, res) => {
+    const { theme, minRating, maxRating, count = 10 } = req.query;
+    
+    // NOTE: User must configure their own BigQuery table ID
+    const tableId = process.env.BIGQUERY_TABLE_ID || 'your-project.your_dataset.puzzles';
+
+    const query = `
+      SELECT *
+      FROM \`${tableId}\`
+      WHERE theme = @theme
+      AND rating >= @minRating
+      AND rating <= @maxRating
+      ORDER BY RAND()
+      LIMIT @count
+    `;
+
+    const options = {
+      query: query,
+      params: { 
+        theme: theme, 
+        minRating: parseInt(minRating as string) || 0, 
+        maxRating: parseInt(maxRating as string) || 3000, 
+        count: parseInt(count as string) || 10 
+      },
+    };
+
+    try {
+      const bq = getBigQuery();
+      const [rows] = await bq.query(options);
+      res.json({ data: rows });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Lichess OAuth
+  app.get('/api/auth/lichess/url', (req, res) => {
+    const state = crypto.randomBytes(16).toString('hex');
+    const codeVerifier = crypto.randomBytes(32).toString('hex');
+    const codeChallenge = crypto.createHash('sha256').update(codeVerifier).digest('base64url');
+    
+    pkceVerifiers.set(state, codeVerifier);
+
+    const redirectUri = `${process.env.APP_URL || `http://localhost:3000`}/api/auth/lichess/callback`;
+    const params = new URLSearchParams({
+      client_id: 'openpecker-app',
+      redirect_uri: redirectUri,
+      response_type: 'code',
+      scope: 'email:read',
+      code_challenge: codeChallenge,
+      code_challenge_method: 'S256',
+      state: state,
+    });
+    res.json({ url: `https://lichess.org/oauth/authorize?${params}` });
+  });
+
+  app.get(['/api/auth/lichess/callback', '/api/auth/lichess/callback/'], async (req, res) => {
+    const { code, state } = req.query;
+    const codeVerifier = pkceVerifiers.get(state as string);
+    
+    if (!codeVerifier) {
+      return res.status(400).send('Invalid state');
+    }
+    pkceVerifiers.delete(state as string);
+    
+    try {
+      const response = await fetch('https://lichess.org/api/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code: code as string,
+          redirect_uri: `${process.env.APP_URL || `http://localhost:3000`}/api/auth/lichess/callback`,
+          client_id: 'openpecker-app',
+          code_verifier: codeVerifier,
+        }),
+      });
+
+      const tokens = await response.json();
+      
+      // Get user info
+      const userResponse = await fetch('https://lichess.org/api/account', {
+        headers: { Authorization: `Bearer ${tokens.access_token}` },
+      });
+      const lichessUser = await userResponse.json();
+
+      // Sync with our users table
+      let user = db.prepare("SELECT * FROM users WHERE lichess_id = ?").get(lichessUser.id) as any;
+      if (!user) {
+        const id = crypto.randomUUID();
+        db.prepare("INSERT INTO users (id, username, lichess_id) VALUES (?, ?, ?)").run(id, lichessUser.username, lichessUser.id);
+        user = { id, username: lichessUser.username, is_premium: 0 };
+      }
+
+      res.send(`
+        <html>
+          <body>
+            <script>
+              if (window.opener) {
+                window.opener.postMessage({ type: 'OAUTH_AUTH_SUCCESS', user: { id: '${user.id}', username: '${user.username}', isPremium: ${user.is_premium === 1} } }, '*');
+                window.close();
+              } else {
+                window.location.href = '/';
+              }
+            </script>
+            <p>Authentication successful. This window should close automatically.</p>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      res.status(500).send('Authentication failed');
+    }
+  });
+
   // Stripe Checkout Session
   app.post("/api/create-checkout-session", async (req, res) => {
     try {
@@ -67,13 +332,13 @@ async function startServer() {
         return res.status(503).json({ error: { message: "Stripe is not configured. Please add STRIPE_SECRET_KEY to the Secrets panel.", code: "STRIPE_NOT_CONFIGURED" } });
       }
 
-      const { deviceId } = req.body;
+      const { deviceId, userId } = req.body;
       // Use origin from headers as a fallback for dynamic preview URLs
       const originHeader = req.headers.origin;
       let origin = (originHeader && originHeader !== 'null') ? originHeader : process.env.APP_URL || `http://localhost:${PORT}`;
       origin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
       
-      console.log(`Creating Stripe session for device: ${deviceId}, origin: ${origin}`);
+      console.log(`Creating Stripe session for user: ${userId}, device: ${deviceId}, origin: ${origin}`);
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
@@ -94,7 +359,7 @@ async function startServer() {
           },
         ],
         mode: "subscription",
-        client_reference_id: deviceId,
+        client_reference_id: userId || deviceId,
         success_url: `${origin}/?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/`,
       });
@@ -122,7 +387,14 @@ async function startServer() {
 
       const session = await stripe.checkout.sessions.retrieve(session_id as string);
       if (session.payment_status === "paid") {
-        res.json({ data: { status: "paid", deviceId: session.client_reference_id } });
+        const referenceId = session.client_reference_id;
+        if (referenceId) {
+          // Update user if it looks like a UUID (our user ID)
+          if (referenceId.length > 20) {
+            db.prepare("UPDATE users SET is_premium = 1 WHERE id = ?").run(referenceId);
+          }
+        }
+        res.json({ data: { status: "paid", referenceId } });
       } else {
         res.json({ data: { status: session.payment_status } });
       }
@@ -131,122 +403,501 @@ async function startServer() {
     }
   });
 
+  // Get list of openings from openings.json
+  app.get("/api/lichess/openings", (req, res) => {
+    try {
+      const openingsPath = path.join(__dirname, "openings.json");
+      if (fs.existsSync(openingsPath)) {
+        const data = fs.readFileSync(openingsPath, 'utf8');
+        const openings = JSON.parse(data);
+        res.json({ data: openings });
+      } else {
+        res.status(404).json({ error: { message: "Openings file not found", code: "NOT_FOUND" } });
+      }
+    } catch (error: any) {
+      res.status(500).json({ error: { message: error.message, code: "OPENINGS_ERROR" } });
+    }
+  });
+
+  // Debug endpoint
+  app.get("/api/debug/status", (req, res) => {
+    try {
+      const puzzleCount = (db.prepare('SELECT COUNT(*) as count FROM puzzles').get() as any).count;
+      const userCount = (db.prepare('SELECT COUNT(*) as count FROM users').get() as any).count;
+      const setCount = (db.prepare('SELECT COUNT(*) as count FROM puzzle_sets').get() as any).count;
+      const themes = db.prepare('SELECT theme, COUNT(*) as count FROM puzzles GROUP BY theme').all();
+      
+      res.json({
+        status: "ok",
+        nodeVersion: process.version,
+        fetchAvailable: typeof fetch !== 'undefined',
+        database: {
+          puzzleCount,
+          userCount,
+          setCount,
+          themes
+        }
+      });
+    } catch (err: any) {
+      res.status(500).json({ status: "error", message: err.message });
+    }
+  });
+
+  // Puzzle Sets API
+  app.get("/api/sets", (req, res) => {
+    const { userId, deviceId } = req.query;
+    if (!userId && !deviceId) {
+      return res.status(400).json({ error: "userId or deviceId required" });
+    }
+
+    try {
+      let sets;
+      if (userId) {
+        sets = db.prepare('SELECT * FROM puzzle_sets WHERE user_id = ? ORDER BY last_played_at DESC').all(userId);
+      } else {
+        sets = db.prepare('SELECT * FROM puzzle_sets WHERE device_id = ? ORDER BY last_played_at DESC').all(deviceId);
+      }
+
+      const formattedSets = sets.map((s: any) => ({
+        ...s,
+        puzzles: JSON.parse(s.puzzles_json),
+        puzzles_json: undefined
+      }));
+
+      res.json({ data: formattedSets });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/sets", express.json(), (req, res) => {
+    const { 
+      id, userId, deviceId, openingSlug, openingDisplay, 
+      puzzleCount, targetCycles, cyclesCompleted, status, 
+      bestAccuracy, totalAttempts, puzzles 
+    } = req.body;
+
+    if (!id || !puzzles) {
+      return res.status(400).json({ error: "id and puzzles required" });
+    }
+
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO puzzle_sets (
+          id, user_id, device_id, opening_slug, opening_display, 
+          puzzle_count, target_cycles, cycles_completed, status, 
+          best_accuracy, total_attempts, puzzles_json, last_played_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(id) DO UPDATE SET
+          user_id = excluded.user_id,
+          device_id = excluded.device_id,
+          opening_slug = excluded.opening_slug,
+          opening_display = excluded.opening_display,
+          puzzle_count = excluded.puzzle_count,
+          target_cycles = excluded.target_cycles,
+          cycles_completed = excluded.cycles_completed,
+          status = excluded.status,
+          best_accuracy = excluded.best_accuracy,
+          total_attempts = excluded.total_attempts,
+          puzzles_json = excluded.puzzles_json,
+          last_played_at = CURRENT_TIMESTAMP
+      `);
+
+      stmt.run(
+        id, userId || null, deviceId || null, openingSlug, openingDisplay,
+        puzzleCount, targetCycles, cyclesCompleted || 0, status || 'active',
+        bestAccuracy || 0, totalAttempts || 0, JSON.stringify(puzzles)
+      );
+
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.patch("/api/sets/:id", express.json(), (req, res) => {
+    const { id } = req.params;
+    const updates = req.body;
+
+    try {
+      const keys = Object.keys(updates).filter(k => k !== 'id' && k !== 'puzzles');
+      if (keys.length === 0 && !updates.puzzles) {
+        return res.status(400).json({ error: "No updates provided" });
+      }
+
+      let query = 'UPDATE puzzle_sets SET last_played_at = CURRENT_TIMESTAMP';
+      const params: any[] = [];
+
+      keys.forEach(key => {
+        // Map camelCase to snake_case if necessary
+        const dbKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+        query += `, ${dbKey} = ?`;
+        params.push(updates[key]);
+      });
+
+      if (updates.puzzles) {
+        query += `, puzzles_json = ?`;
+        params.push(JSON.stringify(updates.puzzles));
+      }
+
+      query += ' WHERE id = ?';
+      params.push(id);
+
+      const stmt = db.prepare(query);
+      stmt.run(...params);
+
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.delete("/api/sets/:id", (req, res) => {
+    const { id } = req.params;
+    try {
+      db.prepare('DELETE FROM puzzle_sets WHERE id = ?').run(id);
+      db.prepare('DELETE FROM cycle_history WHERE set_id = ?').run(id);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Cycle History API
+  app.get("/api/cycles", (req, res) => {
+    const { userId, deviceId } = req.query;
+    if (!userId && !deviceId) {
+      return res.status(400).json({ error: "userId or deviceId required" });
+    }
+
+    try {
+      let cycles;
+      if (userId) {
+        cycles = db.prepare('SELECT * FROM cycle_history WHERE user_id = ? ORDER BY completed_at DESC').all(userId);
+      } else {
+        cycles = db.prepare('SELECT * FROM cycle_history WHERE device_id = ? ORDER BY completed_at DESC').all(deviceId);
+      }
+      res.json({ data: cycles });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/cycles", express.json(), (req, res) => {
+    const { 
+      userId, deviceId, setId, cycle, totalPuzzles, 
+      correctCount, totalTimeMs, completedAt 
+    } = req.body;
+
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO cycle_history (
+          user_id, device_id, set_id, cycle, total_puzzles, 
+          correct_count, total_time_ms, completed_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      stmt.run(
+        userId || null, deviceId || null, setId || null, cycle, 
+        totalPuzzles, correctCount, totalTimeMs, completedAt || new Date().toISOString()
+      );
+
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // Proxy for Lichess Puzzles by theme
   app.get("/api/lichess/puzzles", async (req, res) => {
     try {
-      const { theme, count = 10 } = req.query;
-      console.log(`Puzzle request received: theme=${theme}, count=${count}`);
+      const { theme, count = 10, minRating = 0, maxRating = 3000 } = req.query;
+      console.log(`Puzzle request received: theme=${theme}, count=${count}, rating=${minRating}-${maxRating}`);
+      
       const themeStr = theme as string;
       if (!themeStr) {
         return res.status(400).json({ error: { message: "Theme is required", code: "MISSING_THEME" } });
       }
 
-      const requestedCount = Math.min(Number(count), 200);
+      const themes = themeStr.split(',').map(t => t.trim());
+      const requestedCount = Math.min(Number(count), 400);
+      const minR = Number(minRating);
+      const maxR = Number(maxRating);
       
-      // Check database first
-      const stmt = db.prepare('SELECT data FROM puzzles WHERE theme = ? ORDER BY RANDOM() LIMIT ?');
-      const rows = stmt.all(themeStr, requestedCount) as { data: string }[];
+      const puzzles: any[] = [];
       
-      if (rows.length >= requestedCount) {
-        console.log(`Serving ${requestedCount} puzzles from SQLite database for theme: ${themeStr}`);
-        const puzzles = rows.map(row => JSON.parse(row.data));
-        return res.json({ data: puzzles });
+      // Try to get from database first for all themes
+      for (const t of themes) {
+        const countPerTheme = Math.ceil(requestedCount / themes.length);
+        const stmt = db.prepare('SELECT data FROM puzzles WHERE theme = ? AND rating >= ? AND rating <= ? ORDER BY RANDOM() LIMIT ?');
+        const rows = stmt.all(t, minR, maxR, countPerTheme) as { data: string }[];
+        rows.forEach(row => puzzles.push(JSON.parse(row.data)));
       }
-
-      const puzzles: any[] = rows.map(row => JSON.parse(row.data));
-      const needed = requestedCount - puzzles.length;
+      
+      let needed = requestedCount - puzzles.length;
       
       if (needed > 0) {
-        console.log(`Fetching ${needed} more puzzles for theme: ${themeStr} (Current DB cache: ${puzzles.length})`);
+        console.log(`Fetching ${needed} more puzzles for themes: ${themeStr} (Current DB cache: ${puzzles.length})`);
         
-        // Fetch in small batches to avoid overwhelming Lichess and hitting 429s
-        const batchSize = 4;
-        let consecutiveErrors = 0;
+        const insertStmt = db.prepare('INSERT OR IGNORE INTO puzzles (id, theme, rating, data) VALUES (?, ?, ?, ?)');
         
-        const insertStmt = db.prepare('INSERT OR IGNORE INTO puzzles (id, theme, data) VALUES (?, ?, ?)');
-        
-        for (let i = 0; i < needed; i += batchSize) {
-          if (consecutiveErrors > 2) {
-            console.warn(`Stopping fetch early due to consecutive network errors. Got ${puzzles.length} puzzles.`);
-            break;
-          }
-          
-          const currentBatchSize = Math.min(batchSize, needed - i);
-          const batchPromises = Array.from({ length: currentBatchSize }).map(async () => {
-            let retryCount = 0;
-            const maxRetries = 2;
-            
-            // Try the specific theme first, then fallback to 'opening' if it fails
-            const themesToTry = [themeStr, 'opening'];
-            
-            for (const currentTheme of themesToTry) {
-              while (retryCount < maxRetries) {
-                try {
-                  const controller = new AbortController();
-                  const timeoutId = setTimeout(() => controller.abort(), 15000);
-                  
-                  const response = await fetch(`https://lichess.org/api/puzzle/next?theme=${currentTheme}`, {
-                    headers: {
-                      'Accept': 'application/json',
-                      'User-Agent': 'OpenPecker/1.0 (ismail.helw@gmail.com)'
-                    },
-                    signal: controller.signal
-                  });
-                  
-                  clearTimeout(timeoutId);
-                  
-                  if (response.ok) {
-                    const puzzle = await response.json();
-                    console.log(`Successfully fetched puzzle: ${puzzle.puzzle.id} for theme: ${currentTheme}`);
-                    consecutiveErrors = 0; // Reset on success
-                    return puzzle;
-                  } else if (response.status === 429) {
-                    console.warn(`Lichess 429: Too Many Requests for theme: ${currentTheme}`);
-                    const retryAfter = response.headers.get('Retry-After');
-                    const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : 2000;
-                    await new Promise(resolve => setTimeout(resolve, waitTime));
-                    retryCount++;
-                  } else {
-                    console.error(`Lichess API error: ${response.status} ${response.statusText} for theme: ${currentTheme}`);
-                    break; // Try next theme in themesToTry
-                  }
-                } catch (err) {
-                  console.error(`Fetch error for theme ${currentTheme}:`, err instanceof Error ? err.message : err);
-                  consecutiveErrors++;
-                  break; // Try next theme in themesToTry
-                }
+        // Distribute needed puzzles across themes
+        for (let i = 0; i < needed; i++) {
+          const currentTheme = themes[i % themes.length];
+          try {
+            const response = await fetch(`https://lichess.org/api/puzzle/next?theme=${encodeURIComponent(currentTheme)}`, {
+              headers: {
+                'Accept': 'application/json',
+                'User-Agent': 'OpenPecker/1.0 (ismail.helw@gmail.com)'
               }
-              retryCount = 0; // Reset retry count for the fallback theme
-            }
-            return null;
-          });
-
-          const batchResults = await Promise.all(batchPromises);
-          
-          // Save to database
-          const saveTransaction = db.transaction((results: any[]) => {
-            for (const puzzle of results) {
-              if (puzzle && !puzzles.some(p => p.puzzle.id === puzzle.puzzle.id)) {
-                insertStmt.run(puzzle.puzzle.id, themeStr, JSON.stringify(puzzle));
+            });
+            
+            if (response.ok) {
+              const puzzle = await response.json();
+              insertStmt.run(puzzle.puzzle.id, currentTheme, puzzle.puzzle.rating, JSON.stringify(puzzle));
+              
+              if (!puzzles.some(p => p.puzzle.id === puzzle.puzzle.id)) {
                 puzzles.push(puzzle);
               }
+            } else if (response.status === 429) {
+              const retryAfter = response.headers.get('Retry-After');
+              await new Promise(resolve => setTimeout(resolve, (retryAfter ? parseInt(retryAfter) : 2) * 1000));
+              i--; // Retry
             }
-          });
-          
-          saveTransaction(batchResults);
-
-          // Small delay between batches to be nice to Lichess
-          if (i + batchSize < needed) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Small delay between puzzles
+            await new Promise(resolve => setTimeout(resolve, 100));
+          } catch (err) {
+            console.error(`Error fetching puzzle for ${currentTheme}:`, err);
           }
+          
+          // If we are taking too long, just return what we have
+          if (i > 50 && puzzles.length >= requestedCount / 2) break;
         }
       }
 
-      // Shuffle the final array to ensure randomness even if we just fetched them
+      // Shuffle the final array to ensure randomness
       const shuffled = [...puzzles].sort(() => 0.5 - Math.random());
       res.json({ data: shuffled.slice(0, requestedCount) });
     } catch (error: any) {
       res.status(500).json({ error: { message: error.message, code: "LICHESS_PUZZLE_ERROR" } });
+    }
+  });
+
+  // Batch puzzle endpoint as requested by user
+  app.get('/api/puzzles/batch', async (req, res) => {
+    const { minRating, maxRating, count = 10, theme } = req.query;
+    const minR = parseInt(minRating as string) || 0;
+    const maxR = parseInt(maxRating as string) || 3000;
+    const requestedCount = parseInt(count as string) || 10;
+    const themeStr = theme as string;
+
+    console.log(`[BATCH] Request: rating=${minR}-${maxR}, count=${requestedCount}, theme=${themeStr}`);
+    console.log(`[BATCH] Themes: ${themeStr.split(',').map(t => t.trim()).filter(t => t.length > 0).join(', ')}`);
+
+    if (!themeStr) {
+      console.warn(`[BATCH] Missing required fields: theme=${themeStr}`);
+      return res.status(400).json({ error: "Theme is required." });
+    }
+
+    try {
+      const rawThemes = themeStr.split(',').map(t => t.trim()).filter(t => t.length > 0);
+      if (rawThemes.length === 0) {
+        return res.status(400).json({ error: "At least one valid theme is required." });
+      }
+
+      // Normalize themes: "Sicilian Defense" -> "sicilianDefense", "Checkmate" -> "mate"
+      const mappedThemes = rawThemes.map(t => {
+        if (t.toLowerCase() === 'checkmate') return 'mate';
+        if (t.toLowerCase() === 'opening') return 'opening';
+        if (t.toLowerCase() === 'middlegame') return 'middlegame';
+        if (t.toLowerCase() === 'endgame') return 'endgame';
+        
+        // Convert "Sicilian Defense" to "sicilianDefense"
+        const camelCase = t.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
+          return index === 0 ? word.toLowerCase() : word.toUpperCase();
+        }).replace(/\s+/g, '');
+        
+        return camelCase;
+      });
+      
+      const puzzles: any[] = [];
+      const puzzleIds = new Set<string>();
+      
+      console.log(`[BATCH] Searching DB for themes: ${mappedThemes.join(', ')} (from ${rawThemes.join(', ')}) between ${minR}-${maxR}`);
+      
+      // 0. Try BigQuery first if configured
+      const bigQueryTable = process.env.BIGQUERY_TABLE_ID;
+      if (bigQueryTable) {
+        console.log(`[BATCH] Attempting BigQuery fetch from ${bigQueryTable}`);
+        try {
+          const bq = getBigQuery();
+          const bqQuery = `
+            SELECT data
+            FROM \`${bigQueryTable}\`
+            WHERE theme IN UNNEST(@themes)
+            AND rating >= @minRating
+            AND rating <= @maxRating
+            ORDER BY RAND()
+            LIMIT @count
+          `;
+          const [rows] = await bq.query({
+            query: bqQuery,
+            params: { 
+              themes: mappedThemes, 
+              minRating: minR, 
+              maxRating: maxR, 
+              count: requestedCount 
+            }
+          });
+          
+          rows.forEach((row: any) => {
+            try {
+              const p = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
+              if (p && p.puzzle && !puzzleIds.has(p.puzzle.id)) {
+                puzzles.push(p);
+                puzzleIds.add(p.puzzle.id);
+              }
+            } catch (e) {}
+          });
+          console.log(`[BATCH] BigQuery found ${puzzles.length} puzzles.`);
+        } catch (bqErr: any) {
+          console.error(`[BATCH] BigQuery error:`, bqErr.message);
+        }
+      }
+
+      // 1. Fetch from DB reservoir for all themes
+      for (const t of mappedThemes) {
+        const countPerTheme = Math.ceil(requestedCount / mappedThemes.length);
+        
+        // Try both normalized and raw theme just in case
+        const rows = db.prepare('SELECT data FROM puzzles WHERE (theme = ? OR theme = ?) AND rating >= ? AND rating <= ? ORDER BY RANDOM() LIMIT ?')
+                     .all(t, rawThemes[mappedThemes.indexOf(t)], minR, maxR, countPerTheme) as { data: string }[];
+        
+        rows.forEach(row => {
+          try {
+            const p = JSON.parse(row.data);
+            if (!puzzleIds.has(p.puzzle.id)) {
+              puzzles.push(p);
+              puzzleIds.add(p.puzzle.id);
+            }
+          } catch (e) {}
+        });
+      }
+
+      console.log(`[BATCH] Found ${puzzles.length} puzzles in DB. Needed: ${requestedCount}`);
+
+      // 2. If not enough in reservoir, fetch more from Lichess
+      if (puzzles.length < requestedCount) {
+        const needed = requestedCount - puzzles.length;
+        const insertStmt = db.prepare('INSERT OR IGNORE INTO puzzles (id, theme, rating, data) VALUES (?, ?, ?, ?)');
+        
+        const startTime = Date.now();
+        const maxFetchTime = 15000; // 15 seconds max for Lichess fetches
+        
+        // Fetch in parallel
+        const fetchBatch = async (count: number) => {
+          const promises = Array.from({ length: count }).map(async (_, idx) => {
+            if (Date.now() - startTime > maxFetchTime) return null;
+            
+            const currentTheme = mappedThemes[(puzzles.length + idx) % mappedThemes.length];
+            try {
+              const themeParam = currentTheme === 'opening' ? '' : `?theme=${encodeURIComponent(currentTheme)}`;
+              const response = await fetch(`https://lichess.org/api/puzzle/next${themeParam}`, {
+                headers: { 
+                  'Accept': 'application/json',
+                  'User-Agent': 'OpenPecker/1.0 (ismail.helw@gmail.com)'
+                }
+              });
+              
+              if (response.ok) {
+                const puzzle = await response.json();
+                if (puzzle && puzzle.puzzle && puzzle.puzzle.id) {
+                  // Save for the primary theme used for fetching
+                  insertStmt.run(puzzle.puzzle.id, currentTheme, puzzle.puzzle.rating, JSON.stringify(puzzle));
+                  
+                  // Also save for all other themes associated with this puzzle
+                  if (Array.isArray(puzzle.puzzle.themes)) {
+                    for (const theme of puzzle.puzzle.themes) {
+                      if (theme !== currentTheme) {
+                        insertStmt.run(puzzle.puzzle.id, theme, puzzle.puzzle.rating, JSON.stringify(puzzle));
+                      }
+                    }
+                  }
+                  return puzzle;
+                }
+              }
+            } catch (e) {}
+            return null;
+          });
+          return Promise.all(promises);
+        };
+
+        // Fetch up to 10 puzzles from Lichess
+        const lichessPuzzles = await fetchBatch(Math.min(needed, 10));
+        lichessPuzzles.forEach(p => {
+          if (p && !puzzleIds.has(p.puzzle.id)) {
+            puzzles.push(p);
+            puzzleIds.add(p.puzzle.id);
+          }
+        });
+      }
+
+      // 3. Fallback: If still not enough, just get ANY puzzles from DB within rating range
+      if (puzzles.length < requestedCount) {
+        const needed = requestedCount - puzzles.length;
+        console.log(`[BATCH] Fallback: Searching DB for ${needed} puzzles in rating range ${minR}-${maxR}`);
+        const rows = db.prepare('SELECT data FROM puzzles WHERE rating >= ? AND rating <= ? ORDER BY RANDOM() LIMIT ?')
+                     .all(minR, maxR, needed) as { data: string }[];
+        
+        rows.forEach(row => {
+          try {
+            const p = JSON.parse(row.data);
+            if (!puzzleIds.has(p.puzzle.id)) {
+              puzzles.push(p);
+              puzzleIds.add(p.puzzle.id);
+            }
+          } catch (e) {}
+        });
+      }
+
+      // 4. Ultimate Fallback: If STILL not enough, ignore rating range and just get ANY puzzles
+      if (puzzles.length < requestedCount) {
+        const needed = requestedCount - puzzles.length;
+        console.log(`[BATCH] Ultimate Fallback: Ignoring rating range, getting ${needed} random puzzles`);
+        const rows = db.prepare('SELECT data FROM puzzles ORDER BY RANDOM() LIMIT ?')
+                     .all(needed) as { data: string }[];
+        
+        rows.forEach(row => {
+          try {
+            const p = JSON.parse(row.data);
+            if (!puzzleIds.has(p.puzzle.id)) {
+              puzzles.push(p);
+              puzzleIds.add(p.puzzle.id);
+            }
+          } catch (e) {}
+        });
+      }
+
+      console.log(`[BATCH] Final puzzle count: ${puzzles.length}`);
+
+      if (puzzles.length === 0) {
+        // Last resort: any puzzles at all
+        const rows = db.prepare('SELECT data FROM puzzles ORDER BY RANDOM() LIMIT ?')
+                     .all(requestedCount) as { data: string }[];
+        rows.forEach(row => {
+          try {
+            puzzles.push(JSON.parse(row.data));
+          } catch (e) {}
+        });
+      }
+
+      res.json({
+        status: "success",
+        puzzles: puzzles.sort(() => 0.5 - Math.random()).slice(0, requestedCount)
+      });
+    } catch (err: any) {
+      console.error("[BATCH] Global error:", err);
+      res.status(500).json({ status: "error", error: "Failed to fetch puzzle reservoir.", details: err.message });
     }
   });
 
@@ -312,7 +963,9 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`[SERVER] OpenPecker v1.1 running on http://0.0.0.0:${PORT}`);
+    console.log(`[SERVER] Database: puzzles.db (WAL mode enabled)`);
+    console.log(`[SERVER] Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 }
 

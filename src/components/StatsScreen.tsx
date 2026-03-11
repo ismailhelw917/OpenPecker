@@ -8,8 +8,22 @@ interface StatsScreenProps {
 }
 
 export default function StatsScreen({ onShowPaywall }: StatsScreenProps) {
-  const { cycleHistory, savedSets, isPremium } = useChessStore();
+  const cycleHistory = useChessStore((s) => s.cycleHistory);
+  const savedSets = useChessStore((s) => s.savedSets);
+  const isPremium = useChessStore((s) => s.isPremium);
   const [period, setPeriod] = useState<'7d' | '30d' | 'all'>('all');
+  const [repoStats, setRepoStats] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetch('/api/lichess/repository')
+      .then(res => res.json())
+      .then(data => {
+        if (data.data) {
+          setRepoStats(data.data.sort((a: any, b: any) => b.count - a.count));
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const stats = useMemo(() => {
     const now = new Date();
@@ -299,6 +313,37 @@ export default function StatsScreen({ onShowPaywall }: StatsScreenProps) {
                   );
                 })}
               </div>
+            </div>
+
+            {/* Reservoir Stats */}
+            <div className="bg-bg-card border border-border-dark rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-text-muted">Server Reservoir</h3>
+                <Database size={16} className="text-brand-gold" />
+              </div>
+              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                {repoStats.length === 0 ? (
+                  <p className="text-xs text-text-muted italic">Loading reservoir data...</p>
+                ) : (
+                  repoStats.map((stat: any) => (
+                    <div key={stat.theme} className="flex items-center justify-between group">
+                      <span className="text-xs text-text-primary group-hover:text-brand-gold transition-colors">{stat.theme}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 h-1 bg-bg-dark rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-brand-gold/40" 
+                            style={{ width: `${Math.min(100, (stat.count / 200) * 100)}%` }} 
+                          />
+                        </div>
+                        <span className="text-[10px] font-mono text-text-muted">{stat.count}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              <p className="mt-4 text-[10px] text-text-muted italic leading-relaxed">
+                The reservoir is automatically pre-filled by our background process to ensure instant training sessions.
+              </p>
             </div>
           </div>
 

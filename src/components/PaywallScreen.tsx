@@ -3,6 +3,25 @@ import { motion } from 'motion/react';
 import { Check, X, CreditCard, Shield, Zap } from 'lucide-react';
 import { useChessStore } from '../lib/state/chessStore';
 
+const KingIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    width={size} 
+    height={size} 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M12 2v3M10 3.5h4" />
+    <path d="M12 5c-2 0-3.5 1.5-3.5 3.5 0 1.5 1 3 2.5 3.5V15H8v2h8v-2h-3v-3c1.5-.5 2.5-2 2.5-3.5 0-2-1.5-3.5-3.5-3.5z" />
+    <path d="M9 19h6" />
+    <path d="M8 22h8" />
+  </svg>
+);
+
 interface PaywallScreenProps {
   onClose: () => void;
 }
@@ -11,6 +30,7 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const deviceId = useChessStore((s) => s.deviceId);
+  const user = useChessStore((s) => s.user);
 
   const handleCheckout = async () => {
     setIsLoading(true);
@@ -21,7 +41,7 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ deviceId }),
+        body: JSON.stringify({ deviceId, userId: user?.id }),
       });
 
       const result = await response.json();
@@ -53,7 +73,7 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -79,7 +99,7 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
             </button>
           </div>
           <div className="w-16 h-16 rounded-full bg-brand-gold/10 border border-brand-gold/30 flex items-center justify-center shadow-[0_0_30px_rgba(212,175,55,0.3)]">
-            <span className="text-4xl text-brand-gold">♔</span>
+            <KingIcon size={36} className="text-brand-gold" />
           </div>
         </div>
 
@@ -90,8 +110,8 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
           </div>
 
           <div className="space-y-4 mb-8">
-            {features.map((feature, i) => (
-              <div key={i} className="flex items-center gap-3">
+            {features.map((feature) => (
+              <div key={feature} className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
                   <Check size={12} className="text-emerald-500" />
                 </div>

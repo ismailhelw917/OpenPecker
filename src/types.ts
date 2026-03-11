@@ -2,6 +2,7 @@ export interface Puzzle {
   id: string;
   fen: string;
   solution: string[];
+  moves?: string[];
   initialMove?: string;
   rating?: number;
   plays?: number;
@@ -22,7 +23,7 @@ export interface SavedSet {
   puzzleCount: number;
   targetCycles: number;
   cyclesCompleted: number;
-  status: 'active' | 'completed';
+  status: 'active' | 'completed' | 'paused';
   createdAt: string;
   lastPlayedAt: string;
   bestAccuracy: number;
@@ -31,6 +32,7 @@ export interface SavedSet {
 }
 
 export interface CycleRecord {
+  setId?: string;
   cycle: number;
   totalPuzzles: number;
   correctCount: number;

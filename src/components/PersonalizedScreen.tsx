@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { useChessStore } from '../lib/state/chessStore';
+import { SavedSet } from '../types';
 import { Lock, Play, Download, User, Target, Clock, Repeat } from 'lucide-react';
 import { Chess } from 'chess.js';
 
@@ -126,12 +127,12 @@ export default function PersonalizedScreen({ onStart, onShowPaywall }: Personali
         setGenerationStatus(`Found ${generatedPuzzles.length} opening tactics!`);
         
         // Save as a custom set
-        const newSet = {
+        const newSet: SavedSet = {
           id: `custom_${Date.now()}`,
           openingSlug: 'custom_lichess',
           openingDisplay: `My Mistakes (${lichessUsername})`,
           puzzleCount: generatedPuzzles.length,
-          targetCycles: targetCycles,
+          targetCycles: Number(targetCycles),
           cyclesCompleted: 0,
           status: 'active' as const,
           createdAt: new Date().toISOString(),
@@ -139,7 +140,7 @@ export default function PersonalizedScreen({ onStart, onShowPaywall }: Personali
           bestAccuracy: 0,
           totalAttempts: 0,
           puzzles: generatedPuzzles.slice(0, targetPuzzleCount),
-        };
+        } as any;
         
         addSavedSet(newSet);
         setPuzzles(newSet.puzzles);
@@ -148,9 +149,7 @@ export default function PersonalizedScreen({ onStart, onShowPaywall }: Personali
         setStartTime(Date.now());
         setSelectedOpening('custom_lichess');
         
-        setTimeout(() => {
-          onStart();
-        }, 1000);
+        onStart();
       } else {
         setGenerationStatus('No opening blunders found in recent games.');
         setTimeout(() => setIsGenerating(false), 3000);
@@ -163,7 +162,7 @@ export default function PersonalizedScreen({ onStart, onShowPaywall }: Personali
     }
   };
 
-  const estimatedSeconds = targetPuzzleCount * (typeof targetCycles === 'number' ? targetCycles : 1) * 15;
+  const estimatedSeconds = targetPuzzleCount * (targetCycles === 999 ? 1 : targetCycles) * 15;
   const estimatedMinutes = Math.ceil(estimatedSeconds / 60);
 
   return (
@@ -285,7 +284,7 @@ export default function PersonalizedScreen({ onStart, onShowPaywall }: Personali
                   <Repeat size={16} className="text-text-muted" />
                   <span className="text-text-muted">Max Puzzles:</span>
                   <span className="font-bold text-text-primary ml-auto">
-                    {targetCycles === 999 ? '∞' : targetPuzzleCount * targetCycles}
+                    {targetCycles === 999 ? '∞' : Number(targetPuzzleCount) * Number(targetCycles)}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">

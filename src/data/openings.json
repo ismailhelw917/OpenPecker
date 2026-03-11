@@ -1,0 +1,3310 @@
+[
+  {
+    "name": "Sicilian Defense",
+    "count": 198033
+  },
+  {
+    "name": "Old Sicilian",
+    "count": 13505
+  },
+  {
+    "name": "Bowdler Attack",
+    "count": 13341
+  },
+  {
+    "name": "Closed",
+    "count": 13240
+  },
+  {
+    "name": "Alapin Variation",
+    "count": 13108
+  },
+  {
+    "name": "Najdorf Variation",
+    "count": 10847
+  },
+  {
+    "name": "Modern Variations",
+    "count": 10474
+  },
+  {
+    "name": "Smith-Morra Gambit",
+    "count": 8312
+  },
+  {
+    "name": "McDonnell Attack",
+    "count": 7659
+  },
+  {
+    "name": "Taimanov Variation",
+    "count": 6865
+  },
+  {
+    "name": "Open",
+    "count": 6647
+  },
+  {
+    "name": "French Variation",
+    "count": 6286
+  },
+  {
+    "name": "Nyezhmetdinov-Rossolimo Attack",
+    "count": 5732
+  },
+  {
+    "name": "Accelerated Dragon",
+    "count": 5700
+  },
+  {
+    "name": "Dragon Variation",
+    "count": 5313
+  },
+  {
+    "name": "Kan Variation",
+    "count": 4777
+  },
+  {
+    "name": "Smith-Morra Gambit Accepted",
+    "count": 4464
+  },
+  {
+    "name": "Löwenthal Variation",
+    "count": 3660
+  },
+  {
+    "name": "Delayed Alapin Variation",
+    "count": 3267
+  },
+  {
+    "name": "Lasker-Pelikan Variation",
+    "count": 3150
+  },
+  {
+    "name": "Four Knights Variation",
+    "count": 2810
+  },
+  {
+    "name": "O'Kelly Variation",
+    "count": 2728
+  },
+  {
+    "name": "Grand Prix Attack",
+    "count": 2474
+  },
+  {
+    "name": "Wing Gambit",
+    "count": 2339
+  },
+  {
+    "name": "Hyperaccelerated Fianchetto",
+    "count": 2105
+  },
+  {
+    "name": "Hyperaccelerated Dragon",
+    "count": 2038
+  },
+  {
+    "name": "Classical Variation",
+    "count": 1796
+  },
+  {
+    "name": "Staunton-Cochrane Variation",
+    "count": 1685
+  },
+  {
+    "name": "Moscow Variation",
+    "count": 1648
+  },
+  {
+    "name": "Mengarini Variation",
+    "count": 1600
+  },
+  {
+    "name": "Smith-Morra Gambit Declined",
+    "count": 1580
+  },
+  {
+    "name": "Scheveningen Variation",
+    "count": 1468
+  },
+  {
+    "name": "Chekhover Variation",
+    "count": 1204
+  },
+  {
+    "name": "Nimzowitsch Variation",
+    "count": 1120
+  },
+  {
+    "name": "Snyder Variation",
+    "count": 1097
+  },
+  {
+    "name": "Kalashnikov Variation",
+    "count": 944
+  },
+  {
+    "name": "Marshall Counterattack",
+    "count": 933
+  },
+  {
+    "name": "Franco-Sicilian Variation",
+    "count": 823
+  },
+  {
+    "name": "Sozin Attack",
+    "count": 816
+  },
+  {
+    "name": "Richter-Rauzer Variation",
+    "count": 780
+  },
+  {
+    "name": "Pin Variation",
+    "count": 721
+  },
+  {
+    "name": "Kramnik Variation",
+    "count": 686
+  },
+  {
+    "name": "Hyperaccelerated Pterodactyl",
+    "count": 632
+  },
+  {
+    "name": "Morphy Gambit",
+    "count": 575
+  },
+  {
+    "name": "Lasker-Dunne Attack",
+    "count": 566
+  },
+  {
+    "name": "Paulsen-Basman Defense",
+    "count": 541
+  },
+  {
+    "name": "Godiva Variation",
+    "count": 493
+  },
+  {
+    "name": "Smith-Morra Gambit Deferred",
+    "count": 459
+  },
+  {
+    "name": "Portsmouth Gambit",
+    "count": 373
+  },
+  {
+    "name": "Prins Variation",
+    "count": 326
+  },
+  {
+    "name": "Katalimov Variation",
+    "count": 315
+  },
+  {
+    "name": "Keres Variation",
+    "count": 310
+  },
+  {
+    "name": "Drazic Variation",
+    "count": 307
+  },
+  {
+    "name": "Wing Gambit Deferred",
+    "count": 185
+  },
+  {
+    "name": "Jalalabad Variation",
+    "count": 148
+  },
+  {
+    "name": "Flohr Variation",
+    "count": 142
+  },
+  {
+    "name": "Nimzo-American Variation",
+    "count": 131
+  },
+  {
+    "name": "Kveinis Variation",
+    "count": 120
+  },
+  {
+    "name": "Boleslavsky Variation",
+    "count": 95
+  },
+  {
+    "name": "Bücker Variation",
+    "count": 89
+  },
+  {
+    "name": "Myers Attack",
+    "count": 84
+  },
+  {
+    "name": "Halasz Gambit",
+    "count": 75
+  },
+  {
+    "name": "Venice Attack",
+    "count": 67
+  },
+  {
+    "name": "Quinteros Variation",
+    "count": 67
+  },
+  {
+    "name": "French Defense",
+    "count": 83948
+  },
+  {
+    "name": "Advance Variation",
+    "count": 14738
+  },
+  {
+    "name": "Exchange Variation",
+    "count": 13415
+  },
+  {
+    "name": "Knight Variation",
+    "count": 11120
+  },
+  {
+    "name": "Tarrasch Variation",
+    "count": 5383
+  },
+  {
+    "name": "Normal Variation",
+    "count": 4497
+  },
+  {
+    "name": "Rubinstein Variation",
+    "count": 3858
+  },
+  {
+    "name": "Winawer Variation",
+    "count": 3731
+  },
+  {
+    "name": "Classical Variation",
+    "count": 3466
+  },
+  {
+    "name": "La Bourdonnais Variation",
+    "count": 2652
+  },
+  {
+    "name": "Queen's Knight",
+    "count": 1924
+  },
+  {
+    "name": "Two Knights Variation",
+    "count": 1837
+  },
+  {
+    "name": "Steiner Variation",
+    "count": 1765
+  },
+  {
+    "name": "King's Indian Attack",
+    "count": 1607
+  },
+  {
+    "name": "Franco-Sicilian Defense",
+    "count": 1191
+  },
+  {
+    "name": "Steinitz Variation",
+    "count": 1077
+  },
+  {
+    "name": "Horwitz Attack",
+    "count": 966
+  },
+  {
+    "name": "Schlechter Variation",
+    "count": 926
+  },
+  {
+    "name": "Steinitz Attack",
+    "count": 824
+  },
+  {
+    "name": "Paulsen Variation",
+    "count": 743
+  },
+  {
+    "name": "Wing Gambit",
+    "count": 630
+  },
+  {
+    "name": "Orthoschnapp Gambit",
+    "count": 501
+  },
+  {
+    "name": "Mediterranean Defense",
+    "count": 474
+  },
+  {
+    "name": "Chigorin Variation",
+    "count": 468
+  },
+  {
+    "name": "Alekhine-Chatard Attack",
+    "count": 384
+  },
+  {
+    "name": "St. George Defense",
+    "count": 332
+  },
+  {
+    "name": "Alapin Gambit",
+    "count": 301
+  },
+  {
+    "name": "Diemer-Duhm Gambit Accepted",
+    "count": 258
+  },
+  {
+    "name": "Marshall Gambit",
+    "count": 218
+  },
+  {
+    "name": "Perseus Gambit",
+    "count": 192
+  },
+  {
+    "name": "Pelikan Variation",
+    "count": 170
+  },
+  {
+    "name": "Réti-Spielmann Attack",
+    "count": 161
+  },
+  {
+    "name": "Franco-Hiva Gambit",
+    "count": 103
+  },
+  {
+    "name": "Diemer-Duhm Gambit",
+    "count": 92
+  },
+  {
+    "name": "Carlson Gambit",
+    "count": 84
+  },
+  {
+    "name": "Bird Invitation",
+    "count": 71
+  },
+  {
+    "name": "Henneberger Variation",
+    "count": 64
+  },
+  {
+    "name": "Queen's Pawn Game",
+    "count": 76255
+  },
+  {
+    "name": "Accelerated London System",
+    "count": 17126
+  },
+  {
+    "name": "Chigorin Variation",
+    "count": 8646
+  },
+  {
+    "name": "London System",
+    "count": 6244
+  },
+  {
+    "name": "Zukertort Variation",
+    "count": 5924
+  },
+  {
+    "name": "Colle System",
+    "count": 5618
+  },
+  {
+    "name": "Symmetrical Variation",
+    "count": 3265
+  },
+  {
+    "name": "Modern Defense",
+    "count": 2278
+  },
+  {
+    "name": "Levitsky Attack",
+    "count": 1803
+  },
+  {
+    "name": "Krause Variation",
+    "count": 1630
+  },
+  {
+    "name": "Torre Attack",
+    "count": 1177
+  },
+  {
+    "name": "Stonewall Attack",
+    "count": 1158
+  },
+  {
+    "name": "Anti-Torre",
+    "count": 1123
+  },
+  {
+    "name": "Mason Attack",
+    "count": 863
+  },
+  {
+    "name": "Veresov Attack",
+    "count": 737
+  },
+  {
+    "name": "Anglo-Slav Opening",
+    "count": 386
+  },
+  {
+    "name": "Hübsch Gambit",
+    "count": 202
+  },
+  {
+    "name": "Barry Attack",
+    "count": 151
+  },
+  {
+    "name": "Veresov",
+    "count": 146
+  },
+  {
+    "name": "Italian Game",
+    "count": 72728
+  },
+  {
+    "name": "Two Knights Defense",
+    "count": 18973
+  },
+  {
+    "name": "Classical Variation",
+    "count": 11585
+  },
+  {
+    "name": "Giuoco Pianissimo",
+    "count": 9108
+  },
+  {
+    "name": "Anti-Fried Liver Defense",
+    "count": 7171
+  },
+  {
+    "name": "Giuoco Piano",
+    "count": 5769
+  },
+  {
+    "name": "Evans Gambit",
+    "count": 3821
+  },
+  {
+    "name": "Scotch Gambit",
+    "count": 3479
+  },
+  {
+    "name": "Blackburne-Kostić Gambit",
+    "count": 2588
+  },
+  {
+    "name": "Rousseau Gambit",
+    "count": 1848
+  },
+  {
+    "name": "Hungarian Defense",
+    "count": 1603
+  },
+  {
+    "name": "Paris Defense",
+    "count": 1371
+  },
+  {
+    "name": "Evans Gambit Declined",
+    "count": 509
+  },
+  {
+    "name": "Rosentreter Gambit",
+    "count": 428
+  },
+  {
+    "name": "Deutz Gambit",
+    "count": 423
+  },
+  {
+    "name": "Jerome Gambit",
+    "count": 216
+  },
+  {
+    "name": "Bird's Attack",
+    "count": 149
+  },
+  {
+    "name": "Scotch Invitation Declined",
+    "count": 81
+  },
+  {
+    "name": "Caro-Kann Defense",
+    "count": 70131
+  },
+  {
+    "name": "Advance Variation",
+    "count": 13291
+  },
+  {
+    "name": "Exchange Variation",
+    "count": 7473
+  },
+  {
+    "name": "Two Knights Attack",
+    "count": 5045
+  },
+  {
+    "name": "Classical Variation",
+    "count": 4264
+  },
+  {
+    "name": "Panov Attack",
+    "count": 3937
+  },
+  {
+    "name": "Hillbilly Attack",
+    "count": 2689
+  },
+  {
+    "name": "Maróczy Variation",
+    "count": 2462
+  },
+  {
+    "name": "Accelerated Panov Attack",
+    "count": 2244
+  },
+  {
+    "name": "Tartakower Variation",
+    "count": 2143
+  },
+  {
+    "name": "Main Line",
+    "count": 1455
+  },
+  {
+    "name": "Karpov Variation",
+    "count": 1187
+  },
+  {
+    "name": "Breyer Variation",
+    "count": 1060
+  },
+  {
+    "name": "Campomanes Attack",
+    "count": 550
+  },
+  {
+    "name": "Endgame Offer",
+    "count": 447
+  },
+  {
+    "name": "von Hennig Gambit",
+    "count": 384
+  },
+  {
+    "name": "Rasa-Studier Gambit",
+    "count": 366
+  },
+  {
+    "name": "Forgacs Variation",
+    "count": 328
+  },
+  {
+    "name": "Goldman Variation",
+    "count": 307
+  },
+  {
+    "name": "Euwe Attack",
+    "count": 298
+  },
+  {
+    "name": "Alien Gambit",
+    "count": 285
+  },
+  {
+    "name": "Bronstein-Larsen Variation",
+    "count": 278
+  },
+  {
+    "name": "Alekhine Gambit",
+    "count": 244
+  },
+  {
+    "name": "Modern Variation",
+    "count": 218
+  },
+  {
+    "name": "Apocalypse Attack",
+    "count": 211
+  },
+  {
+    "name": "Ulysses Gambit",
+    "count": 206
+  },
+  {
+    "name": "Gurgenidze System",
+    "count": 189
+  },
+  {
+    "name": "Scandinavian Defense",
+    "count": 55119
+  },
+  {
+    "name": "Mieses-Kotroc Variation",
+    "count": 11664
+  },
+  {
+    "name": "Modern Variation",
+    "count": 10897
+  },
+  {
+    "name": "Main Line",
+    "count": 10249
+  },
+  {
+    "name": "Valencian Variation",
+    "count": 3071
+  },
+  {
+    "name": "Gubinsky-Melts Defense",
+    "count": 2235
+  },
+  {
+    "name": "Icelandic-Palme Gambit",
+    "count": 1859
+  },
+  {
+    "name": "Panov Transfer",
+    "count": 1494
+  },
+  {
+    "name": "Blackburne Gambit",
+    "count": 1245
+  },
+  {
+    "name": "Marshall Variation",
+    "count": 1171
+  },
+  {
+    "name": "Boehnke Gambit",
+    "count": 965
+  },
+  {
+    "name": "Blackburne-Kloosterboer Gambit",
+    "count": 875
+  },
+  {
+    "name": "Portuguese Gambit",
+    "count": 705
+  },
+  {
+    "name": "Kloosterboer Gambit",
+    "count": 557
+  },
+  {
+    "name": "Bronstein Variation",
+    "count": 331
+  },
+  {
+    "name": "Lasker Variation",
+    "count": 283
+  },
+  {
+    "name": "Classical Variation",
+    "count": 256
+  },
+  {
+    "name": "Kiel Variation",
+    "count": 228
+  },
+  {
+    "name": "Anderssen Counterattack",
+    "count": 216
+  },
+  {
+    "name": "Schiller-Pytel Variation",
+    "count": 133
+  },
+  {
+    "name": "Richter Variation",
+    "count": 113
+  },
+  {
+    "name": "Queen's Gambit Declined",
+    "count": 48021
+  },
+  {
+    "name": "Marshall Defense",
+    "count": 7479
+  },
+  {
+    "name": "Albin Countergambit",
+    "count": 4020
+  },
+  {
+    "name": "Exchange Variation",
+    "count": 3255
+  },
+  {
+    "name": "Chigorin Defense",
+    "count": 2762
+  },
+  {
+    "name": "Modern Variation",
+    "count": 2644
+  },
+  {
+    "name": "Queen's Knight Variation",
+    "count": 2311
+  },
+  {
+    "name": "Ragozin Defense",
+    "count": 2275
+  },
+  {
+    "name": "Baltic Defense",
+    "count": 2080
+  },
+  {
+    "name": "Three Knights Variation",
+    "count": 1907
+  },
+  {
+    "name": "Normal Defense",
+    "count": 1771
+  },
+  {
+    "name": "Harrwitz Attack",
+    "count": 1566
+  },
+  {
+    "name": "Semi-Tarrasch Defense",
+    "count": 1490
+  },
+  {
+    "name": "Austrian Defense",
+    "count": 1012
+  },
+  {
+    "name": "Tarrasch Defense",
+    "count": 959
+  },
+  {
+    "name": "Traditional Variation",
+    "count": 900
+  },
+  {
+    "name": "Vienna Variation",
+    "count": 596
+  },
+  {
+    "name": "Orthodox Defense",
+    "count": 522
+  },
+  {
+    "name": "Janowski Variation",
+    "count": 385
+  },
+  {
+    "name": "Neo-Orthodox Variation",
+    "count": 311
+  },
+  {
+    "name": "Barmen Variation",
+    "count": 262
+  },
+  {
+    "name": "Charousek Variation",
+    "count": 247
+  },
+  {
+    "name": "Cambridge Springs Defense",
+    "count": 234
+  },
+  {
+    "name": "Three Knights",
+    "count": 225
+  },
+  {
+    "name": "Tartakower Defense",
+    "count": 190
+  },
+  {
+    "name": "Austrian Attack",
+    "count": 157
+  },
+  {
+    "name": "Capablanca Variation",
+    "count": 116
+  },
+  {
+    "name": "Pseudo-Tarrasch Variation",
+    "count": 112
+  },
+  {
+    "name": "Been-Koomen Variation",
+    "count": 107
+  },
+  {
+    "name": "Alapin Variation",
+    "count": 76
+  },
+  {
+    "name": "Lasker Defense",
+    "count": 73
+  },
+  {
+    "name": "Anti-Tartakower Variation",
+    "count": 69
+  },
+  {
+    "name": "English Opening",
+    "count": 40414
+  },
+  {
+    "name": "King's English Variation",
+    "count": 14356
+  },
+  {
+    "name": "Symmetrical Variation",
+    "count": 6613
+  },
+  {
+    "name": "Anglo-Indian Defense",
+    "count": 5457
+  },
+  {
+    "name": "Agincourt Defense",
+    "count": 3640
+  },
+  {
+    "name": "Anglo-Scandinavian Defense",
+    "count": 2142
+  },
+  {
+    "name": "Caro-Kann Defensive System",
+    "count": 1452
+  },
+  {
+    "name": "Great Snake Variation",
+    "count": 1196
+  },
+  {
+    "name": "The Whale",
+    "count": 989
+  },
+  {
+    "name": "Mikenas-Carls Variation",
+    "count": 632
+  },
+  {
+    "name": "Carls-Bremen System",
+    "count": 631
+  },
+  {
+    "name": "Anglo-Dutch Defense",
+    "count": 593
+  },
+  {
+    "name": "Four Knights System",
+    "count": 337
+  },
+  {
+    "name": "Anglo-Grünfeld Defense",
+    "count": 298
+  },
+  {
+    "name": "Anglo-Lithuanian Variation",
+    "count": 268
+  },
+  {
+    "name": "Jaenisch Gambit",
+    "count": 157
+  },
+  {
+    "name": "Neo-Catalan",
+    "count": 77
+  },
+  {
+    "name": "Mikenas-Carls",
+    "count": 68
+  },
+  {
+    "name": "Ruy Lopez",
+    "count": 39179
+  },
+  {
+    "name": "Morphy Defense",
+    "count": 7592
+  },
+  {
+    "name": "Berlin Defense",
+    "count": 6950
+  },
+  {
+    "name": "Steinitz Defense",
+    "count": 6364
+  },
+  {
+    "name": "Classical Variation",
+    "count": 4144
+  },
+  {
+    "name": "Exchange Variation",
+    "count": 3594
+  },
+  {
+    "name": "Schliemann Defense",
+    "count": 1958
+  },
+  {
+    "name": "Bird Variation",
+    "count": 1944
+  },
+  {
+    "name": "Cozio Defense",
+    "count": 1888
+  },
+  {
+    "name": "Closed",
+    "count": 1296
+  },
+  {
+    "name": "Open",
+    "count": 709
+  },
+  {
+    "name": "Marshall Attack",
+    "count": 450
+  },
+  {
+    "name": "Nürnberg Variation",
+    "count": 317
+  },
+  {
+    "name": "Fianchetto Defense",
+    "count": 126
+  },
+  {
+    "name": "Spanish Countergambit",
+    "count": 123
+  },
+  {
+    "name": "Open Berlin Defense",
+    "count": 99
+  },
+  {
+    "name": "Vinogradov Variation",
+    "count": 73
+  },
+  {
+    "name": "Scotch Game",
+    "count": 36096
+  },
+  {
+    "name": "Scotch Gambit",
+    "count": 7441
+  },
+  {
+    "name": "Classical Variation",
+    "count": 4748
+  },
+  {
+    "name": "Schmidt Variation",
+    "count": 3195
+  },
+  {
+    "name": "Göring Gambit",
+    "count": 2443
+  },
+  {
+    "name": "Lolli Variation",
+    "count": 1879
+  },
+  {
+    "name": "Haxo Gambit",
+    "count": 1613
+  },
+  {
+    "name": "Benima Defense",
+    "count": 1148
+  },
+  {
+    "name": "Mieses Variation",
+    "count": 727
+  },
+  {
+    "name": "Potter Variation",
+    "count": 537
+  },
+  {
+    "name": "Modern Defense",
+    "count": 337
+  },
+  {
+    "name": "Malaniuk Variation",
+    "count": 264
+  },
+  {
+    "name": "Blumenfeld Attack",
+    "count": 217
+  },
+  {
+    "name": "Steinitz Variation",
+    "count": 183
+  },
+  {
+    "name": "Ghulam-Kassim Variation",
+    "count": 99
+  },
+  {
+    "name": "Vitzthum Attack",
+    "count": 90
+  },
+  {
+    "name": "Relfsson Gambit",
+    "count": 88
+  },
+  {
+    "name": "Paulsen Attack",
+    "count": 86
+  },
+  {
+    "name": "Indian Defense",
+    "count": 34959
+  },
+  {
+    "name": "Budapest Defense",
+    "count": 5546
+  },
+  {
+    "name": "Normal Variation",
+    "count": 2048
+  },
+  {
+    "name": "London System",
+    "count": 1866
+  },
+  {
+    "name": "Anti-Nimzo-Indian",
+    "count": 1088
+  },
+  {
+    "name": "Knights Variation",
+    "count": 1072
+  },
+  {
+    "name": "Wade-Tartakower Defense",
+    "count": 955
+  },
+  {
+    "name": "Spielmann-Indian",
+    "count": 838
+  },
+  {
+    "name": "West Indian Defense",
+    "count": 565
+  },
+  {
+    "name": "Reversed Chigorin Defense",
+    "count": 461
+  },
+  {
+    "name": "Seirawan Attack",
+    "count": 397
+  },
+  {
+    "name": "Przepiorka Variation",
+    "count": 372
+  },
+  {
+    "name": "Tartakower Attack",
+    "count": 331
+  },
+  {
+    "name": "Pawn Push Variation",
+    "count": 300
+  },
+  {
+    "name": "Omega Gambit",
+    "count": 252
+  },
+  {
+    "name": "Czech-Indian",
+    "count": 141
+  },
+  {
+    "name": "Colle System",
+    "count": 133
+  },
+  {
+    "name": "Anti-Grünfeld",
+    "count": 122
+  },
+  {
+    "name": "Accelerated London System",
+    "count": 118
+  },
+  {
+    "name": "Maddigan Gambit",
+    "count": 112
+  },
+  {
+    "name": "Pseudo-Benko",
+    "count": 67
+  },
+  {
+    "name": "Philidor Defense",
+    "count": 24519
+  },
+  {
+    "name": "Exchange Variation",
+    "count": 5345
+  },
+  {
+    "name": "Lion Variation",
+    "count": 1042
+  },
+  {
+    "name": "Hanham Variation",
+    "count": 682
+  },
+  {
+    "name": "Morphy Gambit",
+    "count": 554
+  },
+  {
+    "name": "Nimzowitsch Variation",
+    "count": 480
+  },
+  {
+    "name": "Lopez Countergambit",
+    "count": 289
+  },
+  {
+    "name": "Bird Gambit",
+    "count": 257
+  },
+  {
+    "name": "Philidor Countergambit",
+    "count": 243
+  },
+  {
+    "name": "Steinitz Variation",
+    "count": 229
+  },
+  {
+    "name": "Larsen Variation",
+    "count": 181
+  },
+  {
+    "name": "Albin-Blackburne Gambit",
+    "count": 89
+  },
+  {
+    "name": "King's Gambit Accepted",
+    "count": 19809
+  },
+  {
+    "name": "MacLeod Defense",
+    "count": 3002
+  },
+  {
+    "name": "Fischer Defense",
+    "count": 2510
+  },
+  {
+    "name": "King's Knight's Gambit",
+    "count": 2373
+  },
+  {
+    "name": "Bishop's Gambit",
+    "count": 1716
+  },
+  {
+    "name": "Cunningham Defense",
+    "count": 1712
+  },
+  {
+    "name": "Modern Defense",
+    "count": 1613
+  },
+  {
+    "name": "Schallopp Defense",
+    "count": 1450
+  },
+  {
+    "name": "Abbazia Defense",
+    "count": 855
+  },
+  {
+    "name": "Kieseritzky Gambit",
+    "count": 583
+  },
+  {
+    "name": "Becker Defense",
+    "count": 551
+  },
+  {
+    "name": "Muzio Gambit",
+    "count": 519
+  },
+  {
+    "name": "Blachly Gambit",
+    "count": 418
+  },
+  {
+    "name": "Salvio Gambit",
+    "count": 416
+  },
+  {
+    "name": "Rosentreter Gambit",
+    "count": 303
+  },
+  {
+    "name": "Bonsch-Osmolovsky Variation",
+    "count": 272
+  },
+  {
+    "name": "Allgaier Gambit",
+    "count": 198
+  },
+  {
+    "name": "Hanstein Gambit",
+    "count": 132
+  },
+  {
+    "name": "Double Muzio Gambit",
+    "count": 123
+  },
+  {
+    "name": "Traditional Variation",
+    "count": 112
+  },
+  {
+    "name": "Lolli Gambit",
+    "count": 107
+  },
+  {
+    "name": "Ghulam-Kassim Gambit",
+    "count": 96
+  },
+  {
+    "name": "Sörensen Gambit",
+    "count": 74
+  },
+  {
+    "name": "Mason-Keres Gambit",
+    "count": 62
+  },
+  {
+    "name": "Four Knights Game",
+    "count": 19316
+  },
+  {
+    "name": "Italian Variation",
+    "count": 8214
+  },
+  {
+    "name": "Spanish Variation",
+    "count": 3322
+  },
+  {
+    "name": "Scotch Variation Accepted",
+    "count": 3097
+  },
+  {
+    "name": "Scotch Variation",
+    "count": 1138
+  },
+  {
+    "name": "Halloween Gambit",
+    "count": 891
+  },
+  {
+    "name": "Gunsberg Variation",
+    "count": 670
+  },
+  {
+    "name": "Zukertort Opening",
+    "count": 18976
+  },
+  {
+    "name": "Tennison Gambit",
+    "count": 4469
+  },
+  {
+    "name": "Sicilian Invitation",
+    "count": 1796
+  },
+  {
+    "name": "Black Mustang Defense",
+    "count": 1529
+  },
+  {
+    "name": "Queen's Gambit Invitation",
+    "count": 1082
+  },
+  {
+    "name": "Kingside Fianchetto",
+    "count": 986
+  },
+  {
+    "name": "Slav Invitation",
+    "count": 844
+  },
+  {
+    "name": "Pirc Invitation",
+    "count": 809
+  },
+  {
+    "name": "Queenside Fianchetto Variation",
+    "count": 711
+  },
+  {
+    "name": "Dutch Variation",
+    "count": 619
+  },
+  {
+    "name": "Old Indian Attack",
+    "count": 521
+  },
+  {
+    "name": "Nimzo-Larsen Variation",
+    "count": 490
+  },
+  {
+    "name": "Lemberger Gambit",
+    "count": 482
+  },
+  {
+    "name": "Ross Gambit",
+    "count": 475
+  },
+  {
+    "name": "Reversed Mexican Defense",
+    "count": 271
+  },
+  {
+    "name": "Quiet System",
+    "count": 245
+  },
+  {
+    "name": "Wade Defense",
+    "count": 228
+  },
+  {
+    "name": "Reversed Grünfeld",
+    "count": 195
+  },
+  {
+    "name": "Lisitsyn Gambit",
+    "count": 164
+  },
+  {
+    "name": "The Walrus",
+    "count": 139
+  },
+  {
+    "name": "Vos Gambit",
+    "count": 119
+  },
+  {
+    "name": "Herrstrom Gambit",
+    "count": 115
+  },
+  {
+    "name": "Arctic Defense",
+    "count": 83
+  },
+  {
+    "name": "Lisitsyn Gambit Deferred",
+    "count": 72
+  },
+  {
+    "name": "Polish Defense",
+    "count": 67
+  },
+  {
+    "name": "Modern Defense",
+    "count": 18772
+  },
+  {
+    "name": "Standard Defense",
+    "count": 1243
+  },
+  {
+    "name": "Two Knights Variation",
+    "count": 1003
+  },
+  {
+    "name": "Standard Line",
+    "count": 696
+  },
+  {
+    "name": "Three Pawns Attack",
+    "count": 600
+  },
+  {
+    "name": "Mongredien Defense",
+    "count": 475
+  },
+  {
+    "name": "Averbakh System",
+    "count": 393
+  },
+  {
+    "name": "Pseudo-Austrian Attack",
+    "count": 352
+  },
+  {
+    "name": "Geller's System",
+    "count": 337
+  },
+  {
+    "name": "Norwegian Defense",
+    "count": 258
+  },
+  {
+    "name": "Bishop Attack",
+    "count": 240
+  },
+  {
+    "name": "Kotov Variation",
+    "count": 185
+  },
+  {
+    "name": "Beefeater Variation",
+    "count": 82
+  },
+  {
+    "name": "Modern Pterodactyl",
+    "count": 76
+  },
+  {
+    "name": "Pirc Defense",
+    "count": 17998
+  },
+  {
+    "name": "Classical Variation",
+    "count": 3237
+  },
+  {
+    "name": "Austrian Attack",
+    "count": 1298
+  },
+  {
+    "name": "Byrne Variation",
+    "count": 1039
+  },
+  {
+    "name": "Kholmov System",
+    "count": 369
+  },
+  {
+    "name": "Roscher Gambit",
+    "count": 216
+  },
+  {
+    "name": "Bayonet Attack",
+    "count": 93
+  },
+  {
+    "name": "Vienna Game",
+    "count": 17716
+  },
+  {
+    "name": "Vienna Gambit",
+    "count": 5543
+  },
+  {
+    "name": "Stanley Variation",
+    "count": 3635
+  },
+  {
+    "name": "Max Lange Defense",
+    "count": 2017
+  },
+  {
+    "name": "Anderssen Defense",
+    "count": 1555
+  },
+  {
+    "name": "Falkbeer Variation",
+    "count": 607
+  },
+  {
+    "name": "Frankenstein-Dracula Variation",
+    "count": 526
+  },
+  {
+    "name": "Omaha Gambit",
+    "count": 377
+  },
+  {
+    "name": "Paulsen Variation",
+    "count": 260
+  },
+  {
+    "name": "Mieses Variation",
+    "count": 251
+  },
+  {
+    "name": "Mengarini Variation",
+    "count": 194
+  },
+  {
+    "name": "Bishop's Opening",
+    "count": 17613
+  },
+  {
+    "name": "Berlin Defense",
+    "count": 4146
+  },
+  {
+    "name": "Vienna Hybrid",
+    "count": 2953
+  },
+  {
+    "name": "Boi Variation",
+    "count": 1776
+  },
+  {
+    "name": "Ponziani Gambit",
+    "count": 1092
+  },
+  {
+    "name": "Urusov Gambit",
+    "count": 821
+  },
+  {
+    "name": "Philidor Counterattack",
+    "count": 649
+  },
+  {
+    "name": "Boden-Kieseritzky Gambit",
+    "count": 428
+  },
+  {
+    "name": "Calabrese Countergambit",
+    "count": 292
+  },
+  {
+    "name": "Lewis Gambit",
+    "count": 258
+  },
+  {
+    "name": "Khan Gambit",
+    "count": 98
+  },
+  {
+    "name": "Philidor Variation",
+    "count": 93
+  },
+  {
+    "name": "Stein Gambit",
+    "count": 72
+  },
+  {
+    "name": "Warsaw Gambit",
+    "count": 67
+  },
+  {
+    "name": "Slav Defense",
+    "count": 16967
+  },
+  {
+    "name": "Exchange Variation",
+    "count": 3095
+  },
+  {
+    "name": "Three Knights Variation",
+    "count": 2059
+  },
+  {
+    "name": "Modern Line",
+    "count": 2040
+  },
+  {
+    "name": "Quiet Variation",
+    "count": 1191
+  },
+  {
+    "name": "Slav Gambit",
+    "count": 360
+  },
+  {
+    "name": "Geller Gambit",
+    "count": 340
+  },
+  {
+    "name": "Czech Variation",
+    "count": 301
+  },
+  {
+    "name": "Schlechter Variation",
+    "count": 285
+  },
+  {
+    "name": "Diemer Gambit",
+    "count": 215
+  },
+  {
+    "name": "Bonet Gambit",
+    "count": 202
+  },
+  {
+    "name": "Chebanenko Variation",
+    "count": 156
+  },
+  {
+    "name": "Alekhine Variation",
+    "count": 113
+  },
+  {
+    "name": "Two Knights Attack",
+    "count": 90
+  },
+  {
+    "name": "Winawer Countergambit",
+    "count": 84
+  },
+  {
+    "name": "Alapin Variation",
+    "count": 71
+  },
+  {
+    "name": "King's Pawn Game",
+    "count": 16425
+  },
+  {
+    "name": "Busch-Gass Gambit",
+    "count": 3333
+  },
+  {
+    "name": "Leonardis Variation",
+    "count": 2867
+  },
+  {
+    "name": "McConnell Defense",
+    "count": 1947
+  },
+  {
+    "name": "Wayward Queen Attack",
+    "count": 1621
+  },
+  {
+    "name": "Napoleon Attack",
+    "count": 749
+  },
+  {
+    "name": "Maróczy Defense",
+    "count": 685
+  },
+  {
+    "name": "Damiano Defense",
+    "count": 677
+  },
+  {
+    "name": "MacLeod Attack",
+    "count": 510
+  },
+  {
+    "name": "Tayler Opening",
+    "count": 439
+  },
+  {
+    "name": "Gunderam Gambit",
+    "count": 370
+  },
+  {
+    "name": "King's Head Opening",
+    "count": 364
+  },
+  {
+    "name": "Beyer Gambit",
+    "count": 296
+  },
+  {
+    "name": "Alapin Opening",
+    "count": 265
+  },
+  {
+    "name": "Dresden Opening",
+    "count": 223
+  },
+  {
+    "name": "Mengarini's Opening",
+    "count": 208
+  },
+  {
+    "name": "Clam Variation",
+    "count": 80
+  },
+  {
+    "name": "Tortoise Opening",
+    "count": 63
+  },
+  {
+    "name": "Queen's Gambit Accepted",
+    "count": 13268
+  },
+  {
+    "name": "Old Variation",
+    "count": 3538
+  },
+  {
+    "name": "Central Variation",
+    "count": 2695
+  },
+  {
+    "name": "Saduleto Variation",
+    "count": 1008
+  },
+  {
+    "name": "Normal Variation",
+    "count": 844
+  },
+  {
+    "name": "Rosenthal Variation",
+    "count": 463
+  },
+  {
+    "name": "Showalter Variation",
+    "count": 321
+  },
+  {
+    "name": "Classical Defense",
+    "count": 288
+  },
+  {
+    "name": "Gunsberg Defense",
+    "count": 260
+  },
+  {
+    "name": "Accelerated Mannheim Variation",
+    "count": 190
+  },
+  {
+    "name": "Janowski-Larsen Variation",
+    "count": 128
+  },
+  {
+    "name": "Alekhine Defense",
+    "count": 103
+  },
+  {
+    "name": "Slav Gambit",
+    "count": 91
+  },
+  {
+    "name": "Benoni Defense",
+    "count": 12342
+  },
+  {
+    "name": "Old Benoni",
+    "count": 5702
+  },
+  {
+    "name": "Benoni Gambit Accepted",
+    "count": 2333
+  },
+  {
+    "name": "French Benoni",
+    "count": 832
+  },
+  {
+    "name": "Modern Variation",
+    "count": 592
+  },
+  {
+    "name": "Benoni-Indian Defense",
+    "count": 555
+  },
+  {
+    "name": "Hromádka System",
+    "count": 389
+  },
+  {
+    "name": "King's Pawn Line",
+    "count": 306
+  },
+  {
+    "name": "Classical Variation",
+    "count": 200
+  },
+  {
+    "name": "Czech Benoni Defense",
+    "count": 123
+  },
+  {
+    "name": "Semi-Benoni",
+    "count": 94
+  },
+  {
+    "name": "Weenink Variation",
+    "count": 84
+  },
+  {
+    "name": "Four Pawns Attack",
+    "count": 69
+  },
+  {
+    "name": "Nimzowitsch Defense",
+    "count": 11971
+  },
+  {
+    "name": "Scandinavian Variation",
+    "count": 3127
+  },
+  {
+    "name": "Kennedy Variation",
+    "count": 2837
+  },
+  {
+    "name": "Declined Variation",
+    "count": 1580
+  },
+  {
+    "name": "Franco-Nimzowitsch Variation",
+    "count": 567
+  },
+  {
+    "name": "Williams Variation",
+    "count": 555
+  },
+  {
+    "name": "Mikenas Variation",
+    "count": 396
+  },
+  {
+    "name": "Colorado Countergambit Accepted",
+    "count": 379
+  },
+  {
+    "name": "Colorado Countergambit",
+    "count": 271
+  },
+  {
+    "name": "French Connection",
+    "count": 142
+  },
+  {
+    "name": "Pseudo-Spanish Variation",
+    "count": 120
+  },
+  {
+    "name": "Nimzo-Larsen Attack",
+    "count": 11752
+  },
+  {
+    "name": "Modern Variation",
+    "count": 4592
+  },
+  {
+    "name": "Classical Variation",
+    "count": 3427
+  },
+  {
+    "name": "Indian Variation",
+    "count": 1236
+  },
+  {
+    "name": "English Variation",
+    "count": 560
+  },
+  {
+    "name": "Symmetrical Variation",
+    "count": 236
+  },
+  {
+    "name": "Dutch Variation",
+    "count": 126
+  },
+  {
+    "name": "Spike Variation",
+    "count": 76
+  },
+  {
+    "name": "King's Indian Defense",
+    "count": 11407
+  },
+  {
+    "name": "Normal Variation",
+    "count": 3560
+  },
+  {
+    "name": "Orthodox Variation",
+    "count": 1165
+  },
+  {
+    "name": "Fianchetto Variation",
+    "count": 895
+  },
+  {
+    "name": "Sämisch Variation",
+    "count": 857
+  },
+  {
+    "name": "Four Pawns Attack",
+    "count": 778
+  },
+  {
+    "name": "Smyslov Variation",
+    "count": 524
+  },
+  {
+    "name": "Zinnowitz Variation",
+    "count": 369
+  },
+  {
+    "name": "Makogonov Variation",
+    "count": 354
+  },
+  {
+    "name": "Semi-Classical Variation",
+    "count": 219
+  },
+  {
+    "name": "Accelerated Averbakh Variation",
+    "count": 201
+  },
+  {
+    "name": "Semi-Averbakh System",
+    "count": 179
+  },
+  {
+    "name": "Larsen Variation",
+    "count": 169
+  },
+  {
+    "name": "Averbakh Variation",
+    "count": 155
+  },
+  {
+    "name": "Petrosian Variation",
+    "count": 139
+  },
+  {
+    "name": "Kramer Variation",
+    "count": 93
+  },
+  {
+    "name": "Exchange Variation",
+    "count": 85
+  },
+  {
+    "name": "Steiner Attack",
+    "count": 74
+  },
+  {
+    "name": "Alekhine Defense",
+    "count": 11287
+  },
+  {
+    "name": "Scandinavian Variation",
+    "count": 2982
+  },
+  {
+    "name": "Modern Variation",
+    "count": 1025
+  },
+  {
+    "name": "Normal Variation",
+    "count": 937
+  },
+  {
+    "name": "Four Pawns Attack",
+    "count": 819
+  },
+  {
+    "name": "Exchange Variation",
+    "count": 685
+  },
+  {
+    "name": "Maróczy Variation",
+    "count": 521
+  },
+  {
+    "name": "Two Pawns Attack",
+    "count": 500
+  },
+  {
+    "name": "Sämisch Attack",
+    "count": 366
+  },
+  {
+    "name": "Balogh Variation",
+    "count": 217
+  },
+  {
+    "name": "Mokele Mbembe",
+    "count": 168
+  },
+  {
+    "name": "Krejcik Variation",
+    "count": 156
+  },
+  {
+    "name": "O'Sullivan Gambit",
+    "count": 154
+  },
+  {
+    "name": "Brooklyn Variation",
+    "count": 143
+  },
+  {
+    "name": "Hunt Variation",
+    "count": 73
+  },
+  {
+    "name": "Horwitz Defense",
+    "count": 10240
+  },
+  {
+    "name": "King's Gambit Declined",
+    "count": 10024
+  },
+  {
+    "name": "Queen's Knight Defense",
+    "count": 4281
+  },
+  {
+    "name": "Falkbeer Countergambit",
+    "count": 2643
+  },
+  {
+    "name": "Classical Variation",
+    "count": 1139
+  },
+  {
+    "name": "Falkbeer Countergambit Accepted",
+    "count": 475
+  },
+  {
+    "name": "Petrov's Defense",
+    "count": 330
+  },
+  {
+    "name": "Miles Defense",
+    "count": 252
+  },
+  {
+    "name": "Mafia Defense",
+    "count": 247
+  },
+  {
+    "name": "Keene's Defense",
+    "count": 190
+  },
+  {
+    "name": "Panteldakis Countergambit",
+    "count": 158
+  },
+  {
+    "name": "Keene Defense",
+    "count": 150
+  },
+  {
+    "name": "Classical",
+    "count": 80
+  },
+  {
+    "name": "Norwalde Variation",
+    "count": 66
+  },
+  {
+    "name": "Owen Defense",
+    "count": 9875
+  },
+  {
+    "name": "Smith Gambit",
+    "count": 260
+  },
+  {
+    "name": "Englund Gambit",
+    "count": 9383
+  },
+  {
+    "name": "Hartlaub-Charlick Gambit",
+    "count": 2074
+  },
+  {
+    "name": "Main Line",
+    "count": 1073
+  },
+  {
+    "name": "Soller Gambit",
+    "count": 363
+  },
+  {
+    "name": "Felbecker Gambit",
+    "count": 160
+  },
+  {
+    "name": "Soller Gambit Deferred",
+    "count": 120
+  },
+  {
+    "name": "Stockholm Variation",
+    "count": 114
+  },
+  {
+    "name": "Bird Opening",
+    "count": 9370
+  },
+  {
+    "name": "Dutch Variation",
+    "count": 3204
+  },
+  {
+    "name": "From's Gambit",
+    "count": 1475
+  },
+  {
+    "name": "Williams Gambit",
+    "count": 208
+  },
+  {
+    "name": "Schlechter Gambit",
+    "count": 153
+  },
+  {
+    "name": "Lasker Variation",
+    "count": 145
+  },
+  {
+    "name": "Wagner-Zwitersch Gambit",
+    "count": 89
+  },
+  {
+    "name": "Sturm Gambit",
+    "count": 85
+  },
+  {
+    "name": "Dutch Defense",
+    "count": 8608
+  },
+  {
+    "name": "Queen's Knight Variation",
+    "count": 1366
+  },
+  {
+    "name": "Raphael Variation",
+    "count": 800
+  },
+  {
+    "name": "Rubinstein Variation",
+    "count": 707
+  },
+  {
+    "name": "Classical Variation",
+    "count": 542
+  },
+  {
+    "name": "Hopton Attack",
+    "count": 530
+  },
+  {
+    "name": "Normal Variation",
+    "count": 426
+  },
+  {
+    "name": "Staunton Gambit",
+    "count": 373
+  },
+  {
+    "name": "Staunton Gambit Accepted",
+    "count": 216
+  },
+  {
+    "name": "Leningrad Variation",
+    "count": 166
+  },
+  {
+    "name": "Krejcik Gambit",
+    "count": 109
+  },
+  {
+    "name": "Fianchetto Attack",
+    "count": 104
+  },
+  {
+    "name": "Blackmar's Second Gambit",
+    "count": 101
+  },
+  {
+    "name": "Stonewall Variation",
+    "count": 85
+  },
+  {
+    "name": "Nimzo-Indian Defense",
+    "count": 7602
+  },
+  {
+    "name": "Classical Variation",
+    "count": 1588
+  },
+  {
+    "name": "Three Knights Variation",
+    "count": 1108
+  },
+  {
+    "name": "Leningrad Variation",
+    "count": 982
+  },
+  {
+    "name": "Normal Variation",
+    "count": 689
+  },
+  {
+    "name": "Sämisch Variation",
+    "count": 670
+  },
+  {
+    "name": "Kmoch Variation",
+    "count": 322
+  },
+  {
+    "name": "Spielmann Variation",
+    "count": 214
+  },
+  {
+    "name": "St. Petersburg Variation",
+    "count": 143
+  },
+  {
+    "name": "Romanishin Variation",
+    "count": 97
+  },
+  {
+    "name": "Rubinstein System",
+    "count": 73
+  },
+  {
+    "name": "Reshevsky Variation",
+    "count": 67
+  },
+  {
+    "name": "Petrov's Defense",
+    "count": 7382
+  },
+  {
+    "name": "Stafford Gambit",
+    "count": 1737
+  },
+  {
+    "name": "Italian Variation",
+    "count": 1416
+  },
+  {
+    "name": "Three Knights Game",
+    "count": 1350
+  },
+  {
+    "name": "Modern Attack",
+    "count": 833
+  },
+  {
+    "name": "Damiano Variation",
+    "count": 329
+  },
+  {
+    "name": "Classical Attack",
+    "count": 291
+  },
+  {
+    "name": "Nimzowitsch Attack",
+    "count": 232
+  },
+  {
+    "name": "Cochrane Gambit",
+    "count": 150
+  },
+  {
+    "name": "Cozio Attack",
+    "count": 86
+  },
+  {
+    "name": "Van't Kruijs Opening",
+    "count": 7058
+  },
+  {
+    "name": "Semi-Slav Defense",
+    "count": 6798
+  },
+  {
+    "name": "Accelerated Move Order",
+    "count": 1383
+  },
+  {
+    "name": "Main Line",
+    "count": 1045
+  },
+  {
+    "name": "Marshall Gambit",
+    "count": 607
+  },
+  {
+    "name": "Noteboom Variation",
+    "count": 381
+  },
+  {
+    "name": "Normal Variation",
+    "count": 296
+  },
+  {
+    "name": "Chigorin Defense",
+    "count": 224
+  },
+  {
+    "name": "Stoltz Variation",
+    "count": 204
+  },
+  {
+    "name": "Botvinnik Variation",
+    "count": 192
+  },
+  {
+    "name": "Anti-Moscow Gambit",
+    "count": 168
+  },
+  {
+    "name": "Meran Variation",
+    "count": 154
+  },
+  {
+    "name": "Quiet Variation",
+    "count": 123
+  },
+  {
+    "name": "Accelerated Meran Variation",
+    "count": 63
+  },
+  {
+    "name": "Center Game",
+    "count": 6636
+  },
+  {
+    "name": "Normal Variation",
+    "count": 1553
+  },
+  {
+    "name": "Kieseritzky Variation",
+    "count": 1126
+  },
+  {
+    "name": "Paulsen Attack Variation",
+    "count": 991
+  },
+  {
+    "name": "Berger Variation",
+    "count": 601
+  },
+  {
+    "name": "Halasz-McDonnell Gambit",
+    "count": 407
+  },
+  {
+    "name": "von der Lasa Gambit",
+    "count": 365
+  },
+  {
+    "name": "Hall Variation",
+    "count": 123
+  },
+  {
+    "name": "Lanc-Arnold Gambit",
+    "count": 122
+  },
+  {
+    "name": "Hungarian Opening",
+    "count": 5887
+  },
+  {
+    "name": "Indian Defense",
+    "count": 433
+  },
+  {
+    "name": "Slav Formation",
+    "count": 415
+  },
+  {
+    "name": "Sicilian Invitation",
+    "count": 287
+  },
+  {
+    "name": "Catalan Formation",
+    "count": 274
+  },
+  {
+    "name": "Symmetrical Variation",
+    "count": 244
+  },
+  {
+    "name": "Reversed Modern Defense",
+    "count": 137
+  },
+  {
+    "name": "Dutch Defense",
+    "count": 79
+  },
+  {
+    "name": "Ponziani Opening",
+    "count": 5288
+  },
+  {
+    "name": "Jaenisch Counterattack",
+    "count": 2482
+  },
+  {
+    "name": "Neumann Gambit",
+    "count": 552
+  },
+  {
+    "name": "Ponziani Countergambit",
+    "count": 145
+  },
+  {
+    "name": "Spanish Variation",
+    "count": 86
+  },
+  {
+    "name": "Vukovic Gambit",
+    "count": 80
+  },
+  {
+    "name": "Elephant Gambit",
+    "count": 5210
+  },
+  {
+    "name": "Paulsen Countergambit",
+    "count": 2221
+  },
+  {
+    "name": "Maróczy Gambit",
+    "count": 150
+  },
+  {
+    "name": "Three Knights Opening",
+    "count": 5159
+  },
+  {
+    "name": "Winawer Defense",
+    "count": 262
+  },
+  {
+    "name": "Steinitz Defense",
+    "count": 98
+  },
+  {
+    "name": "Blackmar-Diemer Gambit",
+    "count": 4611
+  },
+  {
+    "name": "von Popiel Gambit",
+    "count": 535
+  },
+  {
+    "name": "Blackmar Gambit",
+    "count": 504
+  },
+  {
+    "name": "Zeller Defense",
+    "count": 400
+  },
+  {
+    "name": "Netherlands Variation",
+    "count": 327
+  },
+  {
+    "name": "Lemberger Countergambit",
+    "count": 184
+  },
+  {
+    "name": "Fritz Attack",
+    "count": 68
+  },
+  {
+    "name": "Polish Opening",
+    "count": 4520
+  },
+  {
+    "name": "Czech Defense",
+    "count": 511
+  },
+  {
+    "name": "Bugayev Attack",
+    "count": 212
+  },
+  {
+    "name": "King's Indian Variation",
+    "count": 204
+  },
+  {
+    "name": "Outflank Variation",
+    "count": 108
+  },
+  {
+    "name": "Schiffler-Sokolsky Variation",
+    "count": 94
+  },
+  {
+    "name": "Birmingham Gambit",
+    "count": 90
+  },
+  {
+    "name": "Baltic Defense",
+    "count": 89
+  },
+  {
+    "name": "Rat Defense",
+    "count": 4262
+  },
+  {
+    "name": "Small Center Defense",
+    "count": 1635
+  },
+  {
+    "name": "Harmonist",
+    "count": 1124
+  },
+  {
+    "name": "English Rat",
+    "count": 610
+  },
+  {
+    "name": "Antal Defense",
+    "count": 596
+  },
+  {
+    "name": "Balogh Defense",
+    "count": 194
+  },
+  {
+    "name": "Accelerated Gurgenidze",
+    "count": 89
+  },
+  {
+    "name": "Rapport-Jobava System",
+    "count": 4256
+  },
+  {
+    "name": "English Defense",
+    "count": 4081
+  },
+  {
+    "name": "Grünfeld Defense",
+    "count": 4061
+  },
+  {
+    "name": "Exchange Variation",
+    "count": 1566
+  },
+  {
+    "name": "Three Knights Variation",
+    "count": 1460
+  },
+  {
+    "name": "Stockholm Variation",
+    "count": 325
+  },
+  {
+    "name": "Brinckmann Attack",
+    "count": 158
+  },
+  {
+    "name": "Russian Variation",
+    "count": 127
+  },
+  {
+    "name": "Trompowsky Attack",
+    "count": 4049
+  },
+  {
+    "name": "Classical Defense",
+    "count": 1084
+  },
+  {
+    "name": "Raptor Variation",
+    "count": 288
+  },
+  {
+    "name": "Edge Variation",
+    "count": 269
+  },
+  {
+    "name": "Borg Variation",
+    "count": 93
+  },
+  {
+    "name": "King's Indian Attack",
+    "count": 3977
+  },
+  {
+    "name": "Symmetrical Defense",
+    "count": 479
+  },
+  {
+    "name": "French Variation",
+    "count": 409
+  },
+  {
+    "name": "Sicilian Variation",
+    "count": 344
+  },
+  {
+    "name": "Keres Variation",
+    "count": 148
+  },
+  {
+    "name": "Wahls Defense",
+    "count": 129
+  },
+  {
+    "name": "Yugoslav Variation",
+    "count": 104
+  },
+  {
+    "name": "Double Fianchetto",
+    "count": 62
+  },
+  {
+    "name": "King's Gambit",
+    "count": 3878
+  },
+  {
+    "name": "Danish Gambit",
+    "count": 3424
+  },
+  {
+    "name": "Grob Opening",
+    "count": 3418
+  },
+  {
+    "name": "Grob Gambit",
+    "count": 1001
+  },
+  {
+    "name": "Spike",
+    "count": 391
+  },
+  {
+    "name": "Grob Gambit Declined",
+    "count": 161
+  },
+  {
+    "name": "Danish Gambit Accepted",
+    "count": 3366
+  },
+  {
+    "name": "Copenhagen Defense",
+    "count": 899
+  },
+  {
+    "name": "Classical Defense",
+    "count": 450
+  },
+  {
+    "name": "Schlechter Defense",
+    "count": 152
+  },
+  {
+    "name": "Chigorin Defense",
+    "count": 103
+  },
+  {
+    "name": "Van Geet Opening",
+    "count": 2720
+  },
+  {
+    "name": "Reversed Nimzowitsch",
+    "count": 312
+  },
+  {
+    "name": "Dunst-Perrenet Gambit",
+    "count": 232
+  },
+  {
+    "name": "Napoleon Attack",
+    "count": 224
+  },
+  {
+    "name": "Grünfeld Defense",
+    "count": 128
+  },
+  {
+    "name": "Berlin Gambit",
+    "count": 80
+  },
+  {
+    "name": "Sicilian Two Knights",
+    "count": 69
+  },
+  {
+    "name": "King's Knight Opening",
+    "count": 2446
+  },
+  {
+    "name": "Normal Variation",
+    "count": 1371
+  },
+  {
+    "name": "Konstantinopolsky",
+    "count": 400
+  },
+  {
+    "name": "Old Indian Defense",
+    "count": 2358
+  },
+  {
+    "name": "Czech Variation",
+    "count": 326
+  },
+  {
+    "name": "Ukrainian Variation",
+    "count": 117
+  },
+  {
+    "name": "Two Knights Variation",
+    "count": 99
+  },
+  {
+    "name": "Janowski Variation",
+    "count": 99
+  },
+  {
+    "name": "Tarrasch Defense",
+    "count": 2323
+  },
+  {
+    "name": "Symmetrical Variation",
+    "count": 873
+  },
+  {
+    "name": "Two Knights Variation",
+    "count": 345
+  },
+  {
+    "name": "Schara Gambit",
+    "count": 162
+  },
+  {
+    "name": "Classical Variation",
+    "count": 125
+  },
+  {
+    "name": "Prague Variation",
+    "count": 105
+  },
+  {
+    "name": "Englund Gambit Declined",
+    "count": 2312
+  },
+  {
+    "name": "Reversed French",
+    "count": 1323
+  },
+  {
+    "name": "Reversed Krebs",
+    "count": 233
+  },
+  {
+    "name": "Reversed Alekhine",
+    "count": 205
+  },
+  {
+    "name": "Reversed Mokele Mbembe",
+    "count": 61
+  },
+  {
+    "name": "Réti Opening",
+    "count": 2206
+  },
+  {
+    "name": "Réti Accepted",
+    "count": 884
+  },
+  {
+    "name": "Advance Variation",
+    "count": 572
+  },
+  {
+    "name": "Anglo-Slav Variation",
+    "count": 185
+  },
+  {
+    "name": "Reversed Blumenfeld Gambit",
+    "count": 125
+  },
+  {
+    "name": "Catalan Opening",
+    "count": 2101
+  },
+  {
+    "name": "Closed",
+    "count": 999
+  },
+  {
+    "name": "Open Defense",
+    "count": 620
+  },
+  {
+    "name": "Blackmar-Diemer Gambit Accepted",
+    "count": 2011
+  },
+  {
+    "name": "Teichmann Defense",
+    "count": 563
+  },
+  {
+    "name": "Euwe Defense",
+    "count": 518
+  },
+  {
+    "name": "Ryder Gambit",
+    "count": 470
+  },
+  {
+    "name": "Ziegler Defense",
+    "count": 224
+  },
+  {
+    "name": "Pietrowsky Defense",
+    "count": 79
+  },
+  {
+    "name": "Gunderam Defense",
+    "count": 64
+  },
+  {
+    "name": "Mieses Opening",
+    "count": 1953
+  },
+  {
+    "name": "Reversed Rat",
+    "count": 463
+  },
+  {
+    "name": "Queen's Indian Defense",
+    "count": 1658
+  },
+  {
+    "name": "Kasparov Variation",
+    "count": 320
+  },
+  {
+    "name": "Classical Variation",
+    "count": 314
+  },
+  {
+    "name": "Fianchetto Variation",
+    "count": 273
+  },
+  {
+    "name": "Kasparov-Petrosian Variation",
+    "count": 166
+  },
+  {
+    "name": "Spassky System",
+    "count": 133
+  },
+  {
+    "name": "Capablanca Variation",
+    "count": 69
+  },
+  {
+    "name": "Petrosian Variation",
+    "count": 64
+  },
+  {
+    "name": "London System",
+    "count": 1542
+  },
+  {
+    "name": "Latvian Gambit",
+    "count": 1467
+  },
+  {
+    "name": "Mlotkowski Variation",
+    "count": 227
+  },
+  {
+    "name": "Mason Countergambit",
+    "count": 194
+  },
+  {
+    "name": "Fraser Defense",
+    "count": 154
+  },
+  {
+    "name": "Mayet Attack",
+    "count": 152
+  },
+  {
+    "name": "Greco Variation",
+    "count": 79
+  },
+  {
+    "name": "St. George Defense",
+    "count": 1382
+  },
+  {
+    "name": "Polish Variation",
+    "count": 129
+  },
+  {
+    "name": "Torre Attack",
+    "count": 1358
+  },
+  {
+    "name": "Classical Defense",
+    "count": 744
+  },
+  {
+    "name": "Fianchetto Defense",
+    "count": 439
+  },
+  {
+    "name": "Czech Defense",
+    "count": 1321
+  },
+  {
+    "name": "Mikenas Defense",
+    "count": 1317
+  },
+  {
+    "name": "Lithuanian Variation",
+    "count": 157
+  },
+  {
+    "name": "Duras Gambit",
+    "count": 1289
+  },
+  {
+    "name": "Saragossa Opening",
+    "count": 1284
+  },
+  {
+    "name": "East Indian Defense",
+    "count": 1097
+  },
+  {
+    "name": "Richter-Veresov Attack",
+    "count": 1042
+  },
+  {
+    "name": "Latvian Gambit Accepted",
+    "count": 1011
+  },
+  {
+    "name": "Main Line",
+    "count": 115
+  },
+  {
+    "name": "Bilguer Variation",
+    "count": 88
+  },
+  {
+    "name": "Vienna Gambit, with Max Lange Defense",
+    "count": 910
+  },
+  {
+    "name": "Knight Variation",
+    "count": 273
+  },
+  {
+    "name": "Benko Gambit",
+    "count": 893
+  },
+  {
+    "name": "Zaitsev System",
+    "count": 160
+  },
+  {
+    "name": "Yusupov-Rubinstein System",
+    "count": 756
+  },
+  {
+    "name": "Blackmar-Diemer Gambit Declined",
+    "count": 736
+  },
+  {
+    "name": "Vienna Defense",
+    "count": 195
+  },
+  {
+    "name": "O'Kelly Defense",
+    "count": 144
+  },
+  {
+    "name": "Lamb Defense",
+    "count": 106
+  },
+  {
+    "name": "Weinsbach Defense",
+    "count": 92
+  },
+  {
+    "name": "Bogo-Indian Defense",
+    "count": 691
+  },
+  {
+    "name": "Exchange Variation",
+    "count": 193
+  },
+  {
+    "name": "Grünfeld Variation",
+    "count": 186
+  },
+  {
+    "name": "Nimzowitsch Variation",
+    "count": 129
+  },
+  {
+    "name": "Danish Gambit Declined",
+    "count": 688
+  },
+  {
+    "name": "Sörensen Defense",
+    "count": 688
+  },
+  {
+    "name": "Neo-Grünfeld Defense",
+    "count": 687
+  },
+  {
+    "name": "Classical Variation",
+    "count": 319
+  },
+  {
+    "name": "Delayed Exchange Variation",
+    "count": 60
+  },
+  {
+    "name": "Benko Gambit Accepted",
+    "count": 664
+  },
+  {
+    "name": "Fully Accepted Variation",
+    "count": 258
+  },
+  {
+    "name": "Modern Variation",
+    "count": 127
+  },
+  {
+    "name": "Pawn Return Variation",
+    "count": 106
+  },
+  {
+    "name": "Borg Defense",
+    "count": 653
+  },
+  {
+    "name": "Borg Gambit",
+    "count": 212
+  },
+  {
+    "name": "Pterodactyl Defense",
+    "count": 632
+  },
+  {
+    "name": "Eastern",
+    "count": 325
+  },
+  {
+    "name": "Western",
+    "count": 143
+  },
+  {
+    "name": "Queen Pterodactyl",
+    "count": 68
+  },
+  {
+    "name": "Sicilian",
+    "count": 62
+  },
+  {
+    "name": "Anderssen's Opening",
+    "count": 625
+  },
+  {
+    "name": "Kádas Opening",
+    "count": 593
+  },
+  {
+    "name": "King's Pawn Opening",
+    "count": 504
+  },
+  {
+    "name": "Lion Defense",
+    "count": 487
+  },
+  {
+    "name": "Anti-Philidor",
+    "count": 290
+  },
+  {
+    "name": "Lion's Jaw",
+    "count": 185
+  },
+  {
+    "name": "Slav Indian",
+    "count": 485
+  },
+  {
+    "name": "Polish Defense",
+    "count": 484
+  },
+  {
+    "name": "Queen's Gambit",
+    "count": 458
+  },
+  {
+    "name": "Rapport-Jobava System, with e6",
+    "count": 432
+  },
+  {
+    "name": "Mexican Defense",
+    "count": 417
+  },
+  {
+    "name": "Barnes Opening",
+    "count": 409
+  },
+  {
+    "name": "Walkerling",
+    "count": 69
+  },
+  {
+    "name": "Queen's Indian Accelerated",
+    "count": 405
+  },
+  {
+    "name": "Ware Opening",
+    "count": 391
+  },
+  {
+    "name": "Canard Opening",
+    "count": 363
+  },
+  {
+    "name": "Blumenfeld Countergambit",
+    "count": 362
+  },
+  {
+    "name": "Ware Defense",
+    "count": 337
+  },
+  {
+    "name": "Rubinstein Opening",
+    "count": 327
+  },
+  {
+    "name": "Goldsmith Defense",
+    "count": 309
+  },
+  {
+    "name": "Clemenz Opening",
+    "count": 295
+  },
+  {
+    "name": "Pseudo Queen's Indian Defense",
+    "count": 282
+  },
+  {
+    "name": "Barnes Defense",
+    "count": 267
+  },
+  {
+    "name": "Paleface Attack",
+    "count": 262
+  },
+  {
+    "name": "Carr Defense",
+    "count": 257
+  },
+  {
+    "name": "Kangaroo Defense",
+    "count": 237
+  },
+  {
+    "name": "Keres Defense",
+    "count": 113
+  },
+  {
+    "name": "Portuguese Opening",
+    "count": 212
+  },
+  {
+    "name": "Wade Defense",
+    "count": 187
+  },
+  {
+    "name": "Gunderam Defense",
+    "count": 181
+  },
+  {
+    "name": "Benko Gambit Declined",
+    "count": 162
+  },
+  {
+    "name": "Main Line",
+    "count": 74
+  },
+  {
+    "name": "Amar Opening",
+    "count": 142
+  },
+  {
+    "name": "Amazon Attack",
+    "count": 124
+  },
+  {
+    "name": "Lasker Simul Special",
+    "count": 116
+  },
+  {
+    "name": "Semi-Slav Defense Accepted",
+    "count": 93
+  },
+  {
+    "name": "Center Game Accepted",
+    "count": 88
+  },
+  {
+    "name": "Sodium Attack",
+    "count": 85
+  },
+  {
+    "name": "Robatsch Defense",
+    "count": 85
+  },
+  {
+    "name": "Hippopotamus Defense",
+    "count": 72
+  },
+  {
+    "name": "Fried Fox Defense",
+    "count": 66
+  },
+  {
+    "name": "Lemming Defense",
+    "count": 61
+  }
+]
