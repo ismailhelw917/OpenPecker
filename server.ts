@@ -81,14 +81,18 @@ try {
     const puzzles = JSON.parse(data);
     const insertStmt = db.prepare('INSERT OR IGNORE INTO puzzles (id, theme, rating, data) VALUES (?, ?, ?, ?)');
     let populatedCount = 0;
-    for (const puzzle of puzzles) {
-      if (puzzle.puzzle && puzzle.puzzle.themes) {
-        for (const theme of puzzle.puzzle.themes) {
-          insertStmt.run(puzzle.puzzle.id, theme, puzzle.puzzle.rating, JSON.stringify(puzzle));
-          populatedCount++;
+    
+    db.transaction(() => {
+      for (const puzzle of puzzles) {
+        if (puzzle.puzzle && puzzle.puzzle.themes) {
+          for (const theme of puzzle.puzzle.themes) {
+            insertStmt.run(puzzle.puzzle.id, theme, puzzle.puzzle.rating, JSON.stringify(puzzle));
+            populatedCount++;
+          }
         }
       }
-    }
+    })();
+    
     console.log(`Populated ${puzzles.length} unique puzzles (${populatedCount} theme-entries).`);
   }
 } catch (err) {
@@ -124,7 +128,7 @@ async function startServer() {
   }
 
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
 
   app.use(cors({
     origin: true,
