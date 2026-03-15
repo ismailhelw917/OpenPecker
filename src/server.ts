@@ -1,3 +1,4 @@
+console.log("[SERVER] Starting server.ts...");
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import { BigQuery } from "@google-cloud/bigquery";
@@ -67,6 +68,13 @@ try {
         data TEXT NOT NULL,
         rating INTEGER,
         PRIMARY KEY (id, theme)
+      );
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        username TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        is_premium INTEGER DEFAULT 0
       );
       CREATE TABLE IF NOT EXISTS puzzle_sets (
         id TEXT PRIMARY KEY,
@@ -168,6 +176,11 @@ async function startServer() {
 
   app.use(express.json());
 
+  app.use((req, res, next) => {
+    console.log(`[SERVER] Request: ${req.method} ${req.url}`);
+    next();
+  });
+
   // Health check endpoint
   app.get("/health", (req, res) => {
     res.json({ status: "ok" });
@@ -179,8 +192,10 @@ async function startServer() {
 
   // Auth Routes
   app.post("/api/auth/register", (req, res) => {
+    console.log('[REGISTER] Request received:', req.body);
     const { username, email, password } = req.body;
     if (!username || !email || !password) {
+      console.warn('[REGISTER] Missing fields');
       return res.status(400).json({ error: { message: "Missing required fields", code: "MISSING_FIELDS" } });
     }
 
@@ -190,11 +205,14 @@ async function startServer() {
       const passwordHash = `${salt}:${hash}`;
       const id = crypto.randomUUID();
 
+      console.log('[REGISTER] Inserting user:', { id, username, email });
       const stmt = db.prepare("INSERT INTO users (id, username, email, password_hash) VALUES (?, ?, ?, ?)");
       stmt.run(id, username, email, passwordHash);
+      console.log('[REGISTER] User inserted successfully');
 
       res.json({ data: { id, username, email, isPremium: false } });
     } catch (error: any) {
+      console.error('[REGISTER] Error:', error);
       if (error.code === "SQLITE_CONSTRAINT") {
         return res.status(400).json({ error: { message: "Username or email already exists", code: "USER_EXISTS" } });
       }
@@ -720,6 +738,7 @@ async function startServer() {
 
   // Batch puzzle endpoint as requested by user
   app.get('/api/puzzles/batch', async (req, res) => {
+    console.log('[BATCH] Request received:', req.query);
     const { minRating, maxRating, count = 10, theme, color } = req.query;
     const minR = parseInt(minRating as string) || 0;
     const maxR = parseInt(maxRating as string) || 3000;
@@ -727,7 +746,7 @@ async function startServer() {
     const themeStr = theme as string;
     const colorFilter = color as string;
 
-    console.log(`[BATCH] Request: rating=${minR}-${maxR}, count=${requestedCount}, theme=${themeStr}, color=${colorFilter}`);
+    console.log(`[BATCH] Parsed: rating=${minR}-${maxR}, count=${requestedCount}, theme=${themeStr}, color=${colorFilter}`);
     if (!themeStr) {
       console.warn(`[BATCH] Missing required fields: theme=${themeStr}`);
       return res.status(400).json({ error: "Theme is required." });
@@ -759,10 +778,6 @@ async function startServer() {
       
       console.log(`[BATCH] Searching DB for themes: ${mappedThemes.join(', ')} (from ${rawThemes.join(', ')}) between ${minR}-${maxR}`);
       
-      // Log all unique themes in DB to debug
-      const allThemes = db.prepare('SELECT DISTINCT theme FROM puzzles LIMIT 50').all() as { theme: string }[];
-      console.log(`[BATCH] Sample themes in DB: ${allThemes.map(t => t.theme).join(', ')}`);
-
       // 0. Try BigQuery first if configured
       const bigQueryTable = process.env.BIGQUERY_TABLE_ID;
       if (bigQueryTable) {

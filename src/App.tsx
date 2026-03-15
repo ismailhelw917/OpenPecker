@@ -17,7 +17,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-neutral-100 flex flex-col">
-      <div className="flex-1">
+      <div className="flex-1 w-4/5 mx-auto">
         {screen === 'home' && (
           <HomeScreen 
             onStartTraining={() => setScreen('train')} 
