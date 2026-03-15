@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { useChessStore } from '../lib/state/chessStore';
+import { ShareButton } from './ShareButton';
 
 export default function RegisterScreen({ onBack }: { onBack: () => void }) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const login = useChessStore((s) => s.login);
   const register = useChessStore((s) => s.register);
   const [error, setError] = useState('');
@@ -36,11 +38,13 @@ export default function RegisterScreen({ onBack }: { onBack: () => void }) {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-bg-card p-8 rounded-2xl border border-border-dark"
+        className="w-full max-w-md bg-bg-card p-8 rounded-2xl border border-border-dark relative"
       >
         <h2 className="text-2xl font-bold text-text-primary mb-6 text-center">
           {isLogin ? 'Login' : 'Create Account'}
         </h2>
+        <ShareButton className="absolute top-4 right-4" />
+        <ShareButton className="absolute top-4 right-4" />
 
         {error && (
           <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm text-center">
@@ -51,6 +55,8 @@ export default function RegisterScreen({ onBack }: { onBack: () => void }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <input 
+              id="username"
+              name="username"
               type="text" 
               placeholder="Username" 
               value={username}
@@ -60,6 +66,8 @@ export default function RegisterScreen({ onBack }: { onBack: () => void }) {
             />
           )}
           <input 
+            id="email"
+            name="email"
             type="email" 
             placeholder="Email" 
             value={email}
@@ -68,6 +76,8 @@ export default function RegisterScreen({ onBack }: { onBack: () => void }) {
             className="w-full p-3 rounded-xl bg-bg-dark border border-border-dark text-text-primary focus:border-brand-gold/50 outline-none transition-all"
           />
           <input 
+            id="password"
+            name="password"
             type="password" 
             placeholder="Password" 
             value={password}
@@ -75,6 +85,17 @@ export default function RegisterScreen({ onBack }: { onBack: () => void }) {
             required
             className="w-full p-3 rounded-xl bg-bg-dark border border-border-dark text-text-primary focus:border-brand-gold/50 outline-none transition-all"
           />
+          <label className="flex items-center space-x-2 text-sm text-text-muted cursor-pointer">
+            <input
+              id="rememberMe"
+              name="rememberMe"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="rounded border-border-dark bg-bg-dark text-brand-gold focus:ring-brand-gold"
+            />
+            <span>Remember me</span>
+          </label>
           <button 
             type="submit"
             disabled={loading}

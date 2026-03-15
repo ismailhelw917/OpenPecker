@@ -2,6 +2,7 @@ import React from 'react';
 import { useChessStore } from '../lib/state/chessStore';
 import { Settings, Palette, Shield, CreditCard, Info, ExternalLink } from 'lucide-react';
 import { motion } from 'motion/react';
+import { ShareButton } from './ShareButton';
 
 interface SettingsScreenProps {
   onShowPaywall: () => void;
@@ -17,13 +18,16 @@ export default function SettingsScreen({ onShowPaywall }: SettingsScreenProps) {
   ] as const;
 
   return (
-    <div className="h-full overflow-y-auto bg-bg-dark p-6 md:p-12">
-      <div className="max-w-2xl mx-auto space-y-12">
+    <div className="h-screen flex flex-col bg-teal-950 p-6 md:p-12">
+      <div className="flex-1 overflow-y-auto max-w-2xl mx-auto space-y-12">
         {/* Header */}
         <div className="space-y-2">
-          <div className="flex items-center gap-3 text-brand-gold">
-            <Settings size={24} />
-            <h1 className="text-3xl font-serif font-bold text-text-primary">Settings</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 text-brand-gold">
+              <Settings size={24} />
+              <h1 className="text-3xl font-serif font-bold text-text-primary">Settings</h1>
+            </div>
+            <ShareButton />
           </div>
           <p className="text-text-muted">Customize your training experience and manage your account.</p>
         </div>

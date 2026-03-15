@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Check, X, CreditCard, Shield, Zap } from 'lucide-react';
 import { useChessStore } from '../lib/state/chessStore';
+import { ShareButton } from './ShareButton';
 
 const KingIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
   <svg 
@@ -90,7 +91,8 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
       >
         {/* Header Image/Gradient */}
         <div className="h-32 bg-gradient-to-br from-brand-gold/20 via-bg-dark to-bg-dark relative flex items-center justify-center">
-          <div className="absolute top-4 right-4 z-10">
+          <div className="absolute top-4 right-4 z-10 flex gap-2">
+            <ShareButton className="p-2 bg-black/20 hover:bg-black/40" />
             <button 
               onClick={onClose}
               className="w-8 h-8 rounded-full bg-black/20 flex items-center justify-center text-text-muted hover:text-white hover:bg-black/40 transition-colors"
@@ -120,17 +122,27 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
             ))}
           </div>
 
-          <div className="bg-bg-card border border-border-dark rounded-2xl p-4 mb-8 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-text-muted mb-1">Lifetime Access</p>
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-brand-gold">$4.99</span>
-                <span className="text-xs text-text-muted">/month</span>
+          <div className="space-y-4 mb-8">
+            <div className="bg-bg-card border border-border-dark rounded-2xl p-4 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-text-muted mb-1">Monthly</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-brand-gold">$4.99</span>
+                  <span className="text-xs text-text-muted">/month</span>
+                </div>
               </div>
+              <Zap size={20} className="text-brand-gold" />
             </div>
-            <div className="flex gap-2 text-text-muted">
-              <Shield size={20} />
-              <Zap size={20} />
+
+            <div className="bg-bg-card border border-brand-gold/30 rounded-2xl p-4 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-brand-gold mb-1">Lifetime Access</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-brand-gold">$49</span>
+                  <span className="text-xs text-text-muted">/once</span>
+                </div>
+              </div>
+              <Shield size={20} className="text-brand-gold" />
             </div>
           </div>
 

@@ -1,83 +1,49 @@
-export type PieceType = 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king';
-export type Color = 'white' | 'black';
+import { Chess, Move } from 'chess.js';
 
-export interface Piece {
-  type: PieceType;
-  color: Color;
+export interface BoardAnalysis {
+  isCheck: boolean;
+  isCheckmate: boolean;
+  isStalemate: boolean;
+  isDraw: boolean;
+  legalMoves: Move[];
+  turn: 'w' | 'b';
+  fen: string;
 }
 
-export type Board = (Piece | null)[][];
-
-/**
- * Updates the board state by moving a piece.
- * Does not check for move validity (handle that in your validation layer).
- */
-export const movePiece = (
-  board: Board,
-  from: [number, number],
-  to: [number, number]
-): Board => {
-  const newBoard = board.map(row => [...row]);
-  const [fromRow, fromCol] = from;
-  const [toRow, toCol] = to;
-
-  newBoard[toRow][toCol] = newBoard[fromRow][fromCol];
-  newBoard[fromRow][fromCol] = null;
-
-  return newBoard;
+export const analyzeBoard = (fen: string): BoardAnalysis => {
+  const game = new Chess(fen);
+  return {
+    isCheck: game.inCheck(),
+    isCheckmate: game.isCheckmate(),
+    isStalemate: game.isStalemate(),
+    isDraw: game.isDraw(),
+    legalMoves: game.moves({ verbose: true }),
+    turn: game.turn(),
+    fen: game.fen()
+  };
 };
 
-// Validation Strategy Pattern
-
-export type MoveValidator = (
-  from: [number, number],
-  to: [number, number],
-  board: Board
-) => boolean;
-
-export const isValidKnightMove: MoveValidator = (
-  from: [number, number],
-  to: [number, number]
-): boolean => {
-  const rowDiff = Math.abs(from[0] - to[0]);
-  const colDiff = Math.abs(from[1] - to[1]);
-
-  return (rowDiff === 2 && colDiff === 1) || (rowDiff === 1 && colDiff === 2);
-};
-
-// Map piece types to their validators
-export const pieceValidators: Record<PieceType, MoveValidator> = {
-  pawn: (from, to, board) => {
-    // Basic pawn move logic would go here
-    return false; 
-  },
-  rook: (from, to, board) => {
-    // Basic rook move logic would go here
-    return false;
-  },
-  knight: isValidKnightMove,
-  bishop: (from, to, board) => {
-    // Basic bishop move logic would go here
-    return false;
-  },
-  queen: (from, to, board) => {
-    // Basic queen move logic would go here
-    return false;
-  },
-  king: (from, to, board) => {
-    // Basic king move logic would go here
-    return false;
-  },
-};
-
-export const isValidMove = (
-  from: [number, number],
-  to: [number, number],
-  board: Board
-): boolean => {
-  const piece = board[from[0]][from[1]];
-  if (!piece) return false;
+export const validateAndExecuteMove = (fen: string, from: string, to: string, promotion?: string) => {
+  const game = new Chess(fen);
   
-  const validator = pieceValidators[piece.type];
-  return validator(from, to, board);
+  try {
+    const move = game.move({ from, to, promotion });
+    
+    // Return the new authoritative FEN and move details
+    return {
+      isValid: !!move,
+      move: move,
+      newFen: game.fen(), // Authoritative state
+      isEnPassant: move ? move.flags.includes('e') : false,
+      error: move ? null : 'Invalid move'
+    };
+  } catch (e) {
+    return {
+      isValid: false,
+      move: null,
+      newFen: fen, // Revert to original FEN
+      isEnPassant: false,
+      error: e instanceof Error ? e.message : 'Invalid move'
+    };
+  }
 };

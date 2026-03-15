@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { SavedSet, CycleRecord, PuzzleData } from '../../types';
+import { SavedSet, CycleRecord, PuzzleData } from './types';
 
 interface ChessState {
   isPremium: boolean;
@@ -17,6 +17,10 @@ interface ChessState {
   
   correctCount: number;
   setCorrectCount: (count: number) => void;
+  
+  puzzleDurations: number[];
+  setPuzzleDurations: (durations: number[]) => void;
+  addPuzzleDuration: (duration: number) => void;
   
   startTime: number | null;
   setStartTime: (time: number | null) => void;
@@ -170,6 +174,10 @@ export const useChessStore = create<ChessState>()(
       correctCount: 0,
       setCorrectCount: (correctCount) => set({ correctCount }),
       
+      puzzleDurations: [],
+      setPuzzleDurations: (puzzleDurations) => set({ puzzleDurations }),
+      addPuzzleDuration: (duration) => set((state) => ({ puzzleDurations: [...state.puzzleDurations, duration] })),
+      
       startTime: null,
       setStartTime: (startTime) => set({ startTime }),
       
@@ -202,7 +210,11 @@ export const useChessStore = create<ChessState>()(
       updateSavedSet: async (id, updates) => {
         // Optimistic update
         set((state) => ({
-          savedSets: state.savedSets.map(s => s.id === id ? { ...s, ...updates } : s)
+          savedSets: state.savedSets.map(s => {
+            if (s.id === id) return { ...s, ...updates };
+            if (updates.status === 'active' && s.status === 'active') return { ...s, status: 'paused' };
+            return s;
+          })
         }));
 
         try {

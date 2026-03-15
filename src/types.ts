@@ -1,41 +1,26 @@
-export interface Puzzle {
-  id: string;
-  fen: string;
-  solution: string[];
-  moves?: string[];
-  initialMove?: string;
-  rating?: number;
-  plays?: number;
-  themes?: string[];
-}
+export type Screen = 'home' | 'train' | 'paywall' | 'register' | 'session' | 'sets' | 'settings' | 'stats' | 'personalized';
 
-export interface PuzzleData {
-  puzzle: Puzzle;
-  game?: {
-    pgn: string;
-  };
-}
-
-export interface SavedSet {
+export type SavedSet = {
   id: string;
-  openingSlug: string;
-  openingDisplay: string;
-  puzzleCount: number;
-  targetCycles: number;
-  cyclesCompleted: number;
+  name: string;
   status: 'active' | 'completed' | 'paused';
-  createdAt: string;
-  lastPlayedAt: string;
-  bestAccuracy: number;
-  totalAttempts: number;
-  puzzles: PuzzleData[];
-}
+  // Add other properties as needed
+};
 
-export interface CycleRecord {
-  setId?: string;
-  cycle: number;
+export type CycleRecord = {
+  id: string;
   totalPuzzles: number;
   correctCount: number;
-  totalTimeMs: number;
+  timestamp: number;
   completedAt: string;
-}
+  openingSlug: string;
+  totalTimeMs: number;
+};
+
+export type PuzzleData = {
+  id: string;
+  fen: string;
+  moves: string[];
+  rating: number;
+  themes: string[];
+};

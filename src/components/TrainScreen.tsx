@@ -1,7 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { useChessStore } from '../lib/state/chessStore';
-import { Search, Lock, Play, Clock, Target, Repeat, Database, User, Download, CheckCircle2 } from 'lucide-react';
+import { Screen } from '../types';
+import { Search, Lock, Play, Clock, Target, Repeat, Database, User, Download, CheckCircle2, Home, BarChart2, Settings } from 'lucide-react';
+import { ShareButton } from './ShareButton';
 
 const PawnIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
   <svg 
@@ -204,9 +206,10 @@ const CYCLE_COUNTS = [1, 3, 5, 7, 'Infinite'];
 interface TrainScreenProps {
   onStart: () => void;
   onShowPaywall: () => void;
+  onNavigate: (screen: Screen) => void;
 }
 
-export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps) {
+export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: TrainScreenProps) {
   const { 
     isPremium, 
     selectedOpening, 
@@ -338,17 +341,17 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
       }
     });
     
-    // Sort groups by name, but keep "Other Openings" at the end
+    // Sort groups and items within groups
     const sortedGroups: Record<string, any[]> = {};
-    Object.keys(groups).sort().forEach(key => {
-      if (key !== 'Other Openings') {
-        sortedGroups[key] = groups[key];
-      }
+    const groupKeys = Object.keys(groups).sort((a, b) => {
+      if (a === 'Other Openings') return 1;
+      if (b === 'Other Openings') return -1;
+      return a.localeCompare(b);
     });
-    if (groups['Other Openings']) {
-      sortedGroups['Other Openings'] = groups['Other Openings'].slice(0, 50); // Limit others
-    }
-    
+
+    groupKeys.forEach(key => {
+      sortedGroups[key] = groups[key].sort((a, b) => a.name.localeCompare(b.name));
+    });
     return sortedGroups;
   }, [searchQuery, activeTab, allOpenings, repositoryStats]);
 
@@ -385,7 +388,8 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
     
     const controller = new AbortController();
     setAbortController(controller);
-    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+    let progressInterval: NodeJS.Timeout;
     
     try {
       const themes = selectedThemes.length > 0 ? selectedThemes.join(',') : selectedOpening;
@@ -393,14 +397,14 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
       setLoadingStatus(`Preparing puzzles for ${selectedThemes.length > 0 ? `${selectedThemes.length} themes` : (OPENINGS.find(o => o.id === selectedOpening)?.name || selectedOpening)}...`);
       
       // Simulate progress for better UX
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         setLoadingProgress(prev => {
-          if (prev >= 98) {
+          if (prev >= 99) {
             clearInterval(progressInterval);
-            return 98;
+            return 99;
           }
           const increment = prev < 30 ? 25 : (prev < 70 ? 15 : (prev < 90 ? 5 : 2));
-          return Math.min(prev + increment, 98);
+          return Math.min(prev + increment, 99);
         });
         
         // Update status messages periodically
@@ -413,10 +417,14 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
       }, 500);
 
       console.log('Initiating fetch to:', `/api/puzzles/batch?theme=${themes}&count=${targetPuzzleCount}&minRating=${minRating}&maxRating=${maxRating}&color=${colorFilter}`);
+      const fetchStartTime = Date.now();
       const response = await fetch(`/api/puzzles/batch?theme=${themes}&count=${targetPuzzleCount}&minRating=${minRating}&maxRating=${maxRating}&color=${colorFilter}`, {
         signal: controller.signal
       });
-      console.log('Fetch completed. Response status:', response.status);
+      console.log('Fetch completed. Response status:', response.status, 'Time taken:', Date.now() - fetchStartTime, 'ms');
+      
+      const result = await response.json();
+      console.log('Fetch result parsed. Time taken:', Date.now() - fetchStartTime, 'ms');
       
       if (!response.ok) {
         throw new Error(`Fetch failed with status: ${response.status}`);
@@ -426,7 +434,6 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
       clearInterval(progressInterval);
       setAbortController(null);
       
-      const result = await response.json();
       setLoadingProgress(100);
       setLoadingStatus('Puzzles ready!');
       
@@ -435,9 +442,15 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
         
         let openingDisplay = '';
         if (selectedThemes.length > 0) {
-          openingDisplay = selectedThemes.length === 1 ? selectedThemes[0] : `${selectedThemes[0]} + ${selectedThemes.length - 1} more`;
+          const names = selectedThemes.map(t => {
+            const opening = OPENINGS.find(o => o.id === t);
+            if (opening) return opening.name.replace(/\s*\(Main\)$/, '');
+            return t.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+          });
+          openingDisplay = names.length === 1 ? names[0] : `${names[0]} + ${names.length - 1} more`;
         } else {
-          openingDisplay = selectedOpening === 'custom_lichess' ? 'My Mistakes' : (OPENINGS.find(o => o.id === selectedOpening)?.name || selectedOpening);
+          const opening = OPENINGS.find(o => o.id === selectedOpening);
+          openingDisplay = selectedOpening === 'custom_lichess' ? 'My Mistakes' : (opening ? opening.name.replace(/\s*\(Main\)$/, '') : selectedOpening);
         }
           
         const newSet: any = {
@@ -456,11 +469,12 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
         };
         
         setTimeout(() => {
-          console.log('Setting puzzles and starting session...');
+          console.log('Setting puzzles and starting session...', result.puzzles.length);
           setPuzzles(result.puzzles);
           setCurrentPuzzleIndex(0);
           setCorrectCount(0);
           setStartTime(Date.now());
+          console.log('Calling addSavedSet with:', newSet);
           addSavedSet(newSet);
           console.log('Setting isStarting to false');
           setIsStarting(false);
@@ -474,6 +488,7 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
       console.log('Setting isStarting to false in catch');
       setIsStarting(false);
       setAbortController(null);
+      if (progressInterval) clearInterval(progressInterval);
       console.error('Error starting session:', error);
       setLoadingStatus(`Error: ${error.message}`);
       if (error.name === 'AbortError') {
@@ -509,7 +524,27 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
   const currentCachedCount = selectedOpening && selectedOpening !== 'custom_lichess' ? (repositoryStats[selectedOpening] || 0) : 0;
 
   return (
-    <div className="h-full flex flex-col bg-bg-dark text-white overflow-y-auto p-6 md:p-10 relative">
+    <div className="h-screen flex flex-col bg-teal-950 text-white">
+      <header className="bg-bg-darker p-6 border-b border-border-dark relative">
+        <ShareButton />
+        <button
+          onClick={() => {
+            setSelectedOpening('');
+            setSelectedThemes([]);
+            setMinRating(0);
+            setMaxRating(3000);
+            setTargetPuzzleCount(20);
+            setTargetCycles(1);
+            setColorFilter('both');
+          }}
+          className="absolute top-6 left-6 text-xs font-bold text-brand-gold hover:text-white transition-colors uppercase tracking-widest"
+        >
+          Reset
+        </button>
+        <h1 className="font-serif text-4xl font-bold text-brand-gold text-center">Configure Training</h1>
+        <p className="text-brand-gold text-center">Set up your spaced repetition cycle.</p>
+      </header>
+      <div className="flex-1 overflow-y-auto p-6 md:p-10 relative">
       {/* Loading Overlay */}
       {isStarting && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-bg-dark/95 backdrop-blur-xl">
@@ -566,13 +601,6 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
 
       <div className="max-w-4xl mx-auto w-full space-y-10">
         
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="font-serif text-4xl font-bold text-text-primary">Configure Training</h1>
-          </div>
-          <p className="text-text-muted">Set up your spaced repetition cycle.</p>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Left Column: Opening Selection */}
@@ -584,7 +612,7 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
                   <Target size={20} className="text-brand-gold" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-lg font-bold text-text-primary">Select Theme</h2>
+                  <h2 className="text-lg font-bold text-slate-400">Select Theme</h2>
                   <p className="text-xs text-text-muted">Choose an opening or tactical theme</p>
                 </div>
               </div>
@@ -616,6 +644,8 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
               <div className="relative mb-6">
                 <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
                 <input 
+                  id="searchThemes"
+                  name="searchThemes"
                   type="text"
                   placeholder="Search themes..."
                   value={searchQuery}
@@ -693,11 +723,13 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
               {/* Rating Range */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-bold text-text-primary">Rating Range</h3>
+                  <h3 className="text-sm font-bold text-slate-400">Rating Range</h3>
                   <span className="text-xs font-mono text-brand-gold">{minRating} - {maxRating}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <input 
+                    id="minRating"
+                    name="minRating"
                     type="number"
                     value={minRating}
                     onChange={(e) => setMinRating(parseInt(e.target.value) || 0)}
@@ -706,6 +738,8 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
                   />
                   <span className="text-text-muted">-</span>
                   <input 
+                    id="maxRating"
+                    name="maxRating"
                     type="number"
                     value={maxRating}
                     onChange={(e) => setMaxRating(parseInt(e.target.value) || 0)}
@@ -718,7 +752,7 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
               {/* Puzzles per cycle */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-bold text-text-primary">Puzzles per Cycle</h3>
+                  <h3 className="text-sm font-bold text-slate-400">Puzzles per Cycle</h3>
                   <span className="text-xs font-mono text-brand-gold">{targetPuzzleCount}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -741,7 +775,7 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
               {/* Number of cycles */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-bold text-text-primary">Target Cycles</h3>
+                  <h3 className="text-sm font-bold text-slate-400">Target Cycles</h3>
                   <span className="text-xs font-mono text-brand-gold">{targetCycles}</span>
                 </div>
                 <div className="grid grid-cols-5 gap-2">
@@ -764,7 +798,7 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
               {/* Color Filter */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-bold text-text-primary">Color Filter</h3>
+                  <h3 className="text-sm font-bold text-slate-400">Color Filter</h3>
                   <span className="text-xs font-mono text-brand-gold">{colorFilter}</span>
                 </div>
                 <div className="flex gap-2">
@@ -786,8 +820,8 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
             </div>
 
             {/* Summary Card */}
-            <div className="bg-gradient-to-b from-brand-gold/10 to-transparent border border-brand-gold/20 rounded-2xl p-6">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-brand-gold mb-6">Session Summary</h3>
+            <div className="bg-bg-card border border-border-dark rounded-2xl p-6">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-500 mb-6">Session Summary</h3>
               
               <div className="space-y-4 mb-8">
                 <div className="flex items-center gap-3 text-sm">
@@ -833,6 +867,7 @@ export default function TrainScreen({ onStart, onShowPaywall }: TrainScreenProps
 
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -2,10 +2,13 @@ import React, { useEffect } from 'react';
 import { Upload, Crown } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Logo } from './Logo';
+import { ShareButton } from './ShareButton';
+import { Screen } from '../types';
+import BottomNav from './BottomNav';
 
 import { useChessStore, initDeviceId, loadPersistedHistory } from '../lib/state/chessStore';
 
-export default function HomeScreen({ onStartTraining, onShowPaywall, onRegister }: { onStartTraining: () => void; onShowPaywall: () => void; onRegister: () => void }) {
+export default function HomeScreen({ onStartTraining, onShowPaywall, onRegister }: { onStartTraining: () => void; onShowPaywall: () => void; onRegister: () => void; }) {
   const cycleHistory = useChessStore((s) => s.cycleHistory);
   const cycle = useChessStore((s) => s.cycle);
   const user = useChessStore((s) => s.user);
@@ -23,123 +26,65 @@ export default function HomeScreen({ onStartTraining, onShowPaywall, onRegister 
   const completedCycles = cycle - 1;
   const isPremium = useChessStore((s) => s.isPremium);
 
-  const handleLichessLogin = async () => {
-    try {
-      const response = await fetch('/api/auth/lichess/url');
-      const { url } = await response.json();
-      
-      const width = 600;
-      const height = 700;
-      const left = window.screenX + (window.outerWidth - width) / 2;
-      const top = window.screenY + (window.outerHeight - height) / 2;
-      
-      const authWindow = window.open(
-        url,
-        'lichess_oauth',
-        `width=${width},height=${height},left=${left},top=${top}`
-      );
-
-      if (!authWindow) {
-        alert('Please allow popups to login with Lichess');
-      }
-    } catch (error) {
-      console.error('Lichess Login Error:', error);
-    }
-  };
-
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
-        setUser(event.data.user);
-      }
-    };
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [setUser]);
-
   return (
-    <div className="relative min-h-full flex flex-col items-center justify-center px-6 py-12 bg-gradient-to-b from-[#1A1A24] via-[#0D0D11] to-[#0D0D11] overflow-y-auto">
+    <div className="relative h-screen w-screen overflow-hidden flex flex-col bg-gradient-to-b from-[#1A1A24] via-[#0D0D11] to-[#0D0D11] mt-[-3.0rem]">
+      <div className="flex-1 flex flex-col items-center justify-between px-4 py-4">
       
       {/* Share button — top right */}
-      <button 
-        className="absolute top-8 right-8 p-4 bg-bg-card border border-border-dark rounded-2xl shadow-xl text-text-muted hover:text-white hover:border-brand-gold/30 transition-all group"
-        onClick={() => {
-          const shareData = {
-            title: 'OpenPecker',
-            text: 'Master chess openings through deliberate repetition with OpenPecker!',
-            url: window.location.href
-          };
-          if (navigator.share && navigator.canShare?.(shareData)) {
-            navigator.share(shareData).catch(console.error);
-          } else {
-            // Fallback: Copy to clipboard
-            navigator.clipboard.writeText(window.location.href);
-            alert('Link copied to clipboard!');
-          }
-        }}
-      >
-        <Upload size={24} className="group-hover:scale-110 transition-transform" />
-      </button>
+      <ShareButton />
 
-      <div className="w-full max-w-4xl flex flex-col items-center gap-12 md:gap-16 relative -top-[28px]">
+      <div className="w-full max-w-4xl flex flex-col items-center gap-4 md:gap-6 flex-1 justify-center">
         
         {/* Branding & CTA - Centered */}
-        <div className="w-full flex flex-col items-center justify-center gap-8">
+        <div className="w-full flex flex-col items-center justify-center gap-4">
           {/* Pawn icon circle */}
           <div className="relative flex items-center justify-center">
-            <div className="w-40 h-40 md:w-56 md:h-56 rounded-full bg-[#1A1A24] border border-brand-gold/30 flex items-center justify-center shadow-[0_0_32px_rgba(212,175,55,0.5)]">
-              <Logo size={160} className="md:w-48 md:h-48" />
+            <div className="w-24 h-24 md:w-36 md:h-36 rounded-full bg-[#1A1A24] border border-brand-gold/30 flex items-center justify-center shadow-[0_0_24px_rgba(212,175,55,0.4)]">
+              <Logo size={80} className="md:w-28 md:h-28" />
             </div>
             {/* Glow halo */}
-            <div className="absolute -bottom-8 w-48 md:w-72 h-16 rounded-[70px] bg-brand-gold/15 blur-2xl"></div>
+            <div className="absolute -bottom-2 w-32 md:w-48 h-8 rounded-[70px] bg-brand-gold/10 blur-xl"></div>
           </div>
 
           {/* App name + tagline */}
-          <div className="text-center space-y-4">
-            <h1 className="font-serif text-5xl md:text-7xl font-bold text-text-primary tracking-tight">
+          <div className="text-center space-y-1">
+            <h1 className="font-serif text-3xl md:text-5xl font-bold text-brand-gold tracking-tight">
               OpenPecker
             </h1>
-            <p className="text-base md:text-xl text-text-muted leading-relaxed max-w-lg mx-auto">
-              Master opening tactics through deliberate repetition. Speed equals mastery.
+            <p className="text-xs md:text-base text-brand-gold leading-relaxed max-w-sm mx-auto">
+              Master opening tactics through deliberate repetition.
             </p>
           </div>
 
           {/* CTA */}
-          <div className="w-full max-w-sm flex flex-col gap-4">
+          <div className="w-full max-w-xs flex flex-col gap-2">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onStartTraining}
-              className="w-full h-16 rounded-2xl bg-gradient-to-r from-brand-gold via-[#B8941F] to-brand-gold text-bg-dark font-bold text-lg tracking-[2px] shadow-[0_8px_24px_rgba(212,175,55,0.25)]"
+              className="w-full h-12 rounded-xl bg-gradient-to-r from-brand-gold via-[#B8941F] to-brand-gold text-bg-dark font-bold text-base tracking-[1px] shadow-[0_4px_16px_rgba(212,175,55,0.2)]"
             >
               START TRAINING  →
             </motion.button>
             
             {!user && (
-              <div className="flex flex-row gap-3 w-full">
-                <button 
-                  onClick={handleLichessLogin}
-                  className="flex-1 py-4 rounded-xl bg-[#2A2A3A] border border-border-dark text-text-primary font-bold text-xs md:text-sm hover:border-brand-gold/30 transition-all flex items-center justify-center gap-2"
-                >
-                  <img src="https://lichess1.org/assets/_6S0m6Y/logo/lichess-favicon-32.png" alt="Lichess" className="w-4 h-4 md:w-5 md:h-5" />
-                  Lichess
-                </button>
+              <div className="flex flex-row gap-2 w-full">
                 <button 
                   onClick={onRegister}
-                  className="flex-1 py-4 rounded-xl bg-bg-card border border-border-dark text-text-primary font-bold text-xs md:text-sm hover:border-brand-gold/30 transition-all"
+                  className="w-full py-2 rounded-lg bg-bg-card border border-border-dark text-text-primary font-bold text-xs hover:border-brand-gold/30 transition-all"
                 >
-                  Email
+                  Sign In / Register
                 </button>
               </div>
             )}
             {user && (
-              <div className="flex flex-col items-center gap-4">
-                <div className="text-center text-text-muted">
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-center text-text-muted text-xs">
                   Logged in as <span className="text-brand-gold font-bold">{user.username}</span>
                 </div>
                 <button 
                   onClick={logout}
-                  className="px-6 py-2 rounded-lg bg-bg-card border border-border-dark text-text-muted hover:text-white hover:border-red-500/30 transition-all text-xs uppercase tracking-widest"
+                  className="px-3 py-0.5 rounded-md bg-bg-card border border-border-dark text-text-muted hover:text-white hover:border-red-500/30 transition-all text-[9px] uppercase tracking-widest"
                 >
                   Logout
                 </button>
@@ -147,11 +92,12 @@ export default function HomeScreen({ onStartTraining, onShowPaywall, onRegister 
             )}
           </div>
         </div>
+      </div>
 
         {/* Stats & Info - Centered below */}
-        <div className="w-full max-w-2xl flex flex-col gap-8">
+        <div className="w-full max-w-xs pb-2">
           {/* Stat chips */}
-          <div className="grid grid-cols-3 gap-4 w-full">
+          <div className="grid grid-cols-3 gap-2 w-full">
             <StatChip label="CYCLES" value={completedCycles} />
             <StatChip label="SOLVED" value={totalSolved} />
             <StatChip label="ACC%" value={accuracy > 0 ? `${accuracy}%` : '—'} />
@@ -162,11 +108,12 @@ export default function HomeScreen({ onStartTraining, onShowPaywall, onRegister 
   );
 }
 
+
 function StatChip({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="flex-1 bg-bg-card rounded-xl py-3 px-2 flex flex-col items-center border border-border-dark gap-1">
       <span className="font-serif text-xl font-bold text-brand-gold">{value}</span>
-      <span className="text-[9px] font-medium text-text-muted tracking-widest">{label}</span>
+      <span className="text-[9px] font-medium text-brand-gold tracking-widest">{label}</span>
     </div>
   );
 }

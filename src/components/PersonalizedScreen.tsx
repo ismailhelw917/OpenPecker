@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { useChessStore } from '../lib/state/chessStore';
 import { SavedSet } from '../types';
 import { Lock, Play, Download, User, Target, Clock, Repeat } from 'lucide-react';
+import { ShareButton } from './ShareButton';
 import { Chess } from 'chess.js';
 
 interface PersonalizedScreenProps {
@@ -166,13 +167,14 @@ export default function PersonalizedScreen({ onStart, onShowPaywall }: Personali
   const estimatedMinutes = Math.ceil(estimatedSeconds / 60);
 
   return (
-    <div className="h-full flex flex-col bg-bg-dark text-white overflow-y-auto p-6 md:p-10">
+    <div className="h-full flex flex-col bg-bg-dark text-white overflow-y-auto p-6 md:p-10 relative">
       <div className="max-w-4xl mx-auto w-full space-y-10">
         
         <div>
           <h1 className="font-serif text-4xl font-bold text-text-primary mb-2">Personalized Tactics</h1>
           <p className="text-text-muted">Generate puzzles from your own Lichess mistakes.</p>
         </div>
+        <ShareButton className="absolute top-6 right-6" />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
@@ -191,6 +193,8 @@ export default function PersonalizedScreen({ onStart, onShowPaywall }: Personali
               
               <div className="flex gap-3">
                 <input 
+                  id="lichessUsername"
+                  name="lichessUsername"
                   type="text"
                   placeholder="Lichess Username"
                   value={lichessUsername}
