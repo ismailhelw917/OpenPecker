@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Screen } from './types';
+import { useChessStore } from './lib/state/chessStore';
 import HomeScreen from './components/HomeScreen';
 import TrainScreen from './components/TrainScreen';
 import PaywallScreen from './components/PaywallScreen';
@@ -14,10 +15,11 @@ import BottomNav from './components/BottomNav';
 const App = () => {
   const [screen, setScreen] = useState<Screen>('home');
   const mainScreens: Screen[] = ['home', 'train', 'sets', 'stats', 'settings'];
+  const { fitToScreen } = useChessStore();
 
   return (
     <div className="min-h-screen bg-neutral-100 flex flex-col">
-      <div className="flex-1 w-4/5 mx-auto">
+      <div className="flex-1 mx-auto" style={{ width: `${fitToScreen}%` }}>
         {screen === 'home' && (
           <HomeScreen 
             onStartTraining={() => setScreen('train')} 
@@ -41,7 +43,7 @@ const App = () => {
             onResume={() => setScreen('session')} 
           />
         )}
-        {screen === 'settings' && <SettingsScreen onBack={() => setScreen('home')} />}
+        {screen === 'settings' && <SettingsScreen onBack={() => setScreen('home')} onShowPaywall={() => setScreen('paywall')} />}
         {screen === 'stats' && <StatsScreen onBack={() => setScreen('home')} />}
         {screen === 'personalized' && (
           <PersonalizedScreen 
@@ -51,7 +53,9 @@ const App = () => {
         )}
       </div>
       {mainScreens.includes(screen) && (
-        <BottomNav activeScreen={screen} onNavigate={(s) => setScreen(s)} />
+        <div className="mx-auto" style={{ width: `${fitToScreen}%` }}>
+          <BottomNav activeScreen={screen} onNavigate={(s) => setScreen(s)} />
+        </div>
       )}
     </div>
   );

@@ -60,6 +60,9 @@ interface ChessState {
   boardTheme: 'brown' | 'blue' | 'green';
   setBoardTheme: (theme: 'brown' | 'blue' | 'green') => void;
 
+  fitToScreen: number;
+  setFitToScreen: (fitToScreen: number) => void;
+
   user: { id: string; username: string; isPremium?: boolean } | null;
   setUser: (user: { id: string; username: string; isPremium?: boolean } | null) => void;
 
@@ -293,6 +296,9 @@ export const useChessStore = create<ChessState>()(
 
       boardTheme: 'brown',
       setBoardTheme: (boardTheme) => set({ boardTheme }),
+
+      fitToScreen: 100,
+      setFitToScreen: (fitToScreen) => set({ fitToScreen }),
     }),
     {
       name: 'openpecker-storage',

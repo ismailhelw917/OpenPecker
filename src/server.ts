@@ -456,8 +456,8 @@ async function startServer() {
     }
   });
 
-  // Get list of openings from openings.json
-  app.get("/api/lichess/openings", (req, res) => {
+  // Get list of openings
+  app.get("/api/openings", (req, res) => {
     try {
       const openingsPath = path.join(__dirname, "../data/openings.json");
       if (fs.existsSync(openingsPath)) {
@@ -923,7 +923,7 @@ async function startServer() {
   });
 
   // Get repository stats
-  app.get("/api/lichess/repository", (req, res) => {
+  app.get("/api/repository", (req, res) => {
     try {
       const stmt = db.prepare('SELECT theme, COUNT(*) as count FROM puzzles GROUP BY theme');
       const rows = stmt.all();

@@ -36,43 +36,60 @@ export default function SettingsScreen({ onShowPaywall }: SettingsScreenProps) {
         <section className="space-y-6">
           <div className="flex items-center gap-3 text-text-primary">
             <Palette size={20} className="text-brand-gold" />
-            <h2 className="text-xl font-bold uppercase tracking-widest text-sm">Board Appearance</h2>
+            <h2 className="text-xl font-bold uppercase tracking-widest text-sm">Appearance</h2>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {themes.map((theme) => (
-              <button
-                key={theme.id}
-                onClick={() => setBoardTheme(theme.id)}
-                className={`group relative p-4 rounded-2xl border transition-all duration-300 ${
-                  boardTheme === theme.id 
-                    ? 'bg-brand-gold/10 border-brand-gold shadow-lg shadow-brand-gold/5' 
-                    : 'bg-bg-card border-border-dark hover:border-brand-gold/30'
-                }`}
-              >
-                <div className="flex flex-col items-center gap-4">
-                  <div className="grid grid-cols-2 w-16 h-16 rounded-lg overflow-hidden border border-white/10 rotate-45 scale-75 group-hover:scale-90 transition-transform">
-                    <div style={{ backgroundColor: theme.light }} />
-                    <div style={{ backgroundColor: theme.dark }} />
-                    <div style={{ backgroundColor: theme.dark }} />
-                    <div style={{ backgroundColor: theme.light }} />
+          <div className="bg-bg-card rounded-2xl border border-border-dark p-6 space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold text-text-primary">Fit to Screen</span>
+                <span className="text-xs font-mono text-brand-gold">{fitToScreen}%</span>
+              </div>
+              <input
+                type="range"
+                min="50"
+                max="100"
+                value={fitToScreen}
+                onChange={(e) => setFitToScreen(parseInt(e.target.value))}
+                className="w-full h-2 bg-bg-dark rounded-lg appearance-none cursor-pointer accent-brand-gold"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {themes.map((theme) => (
+                <button
+                  key={theme.id}
+                  onClick={() => setBoardTheme(theme.id)}
+                  className={`group relative p-4 rounded-2xl border transition-all duration-300 ${
+                    boardTheme === theme.id 
+                      ? 'bg-brand-gold/10 border-brand-gold shadow-lg shadow-brand-gold/5' 
+                      : 'bg-bg-dark border-border-dark hover:border-brand-gold/30'
+                  }`}
+                >
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="grid grid-cols-2 w-16 h-16 rounded-lg overflow-hidden border border-white/10 rotate-45 scale-75 group-hover:scale-90 transition-transform">
+                      <div style={{ backgroundColor: theme.light }} />
+                      <div style={{ backgroundColor: theme.dark }} />
+                      <div style={{ backgroundColor: theme.dark }} />
+                      <div style={{ backgroundColor: theme.light }} />
+                    </div>
+                    <span className={`text-xs font-bold uppercase tracking-widest ${
+                      boardTheme === theme.id ? 'text-brand-gold' : 'text-text-muted'
+                    }`}>
+                      {theme.name}
+                    </span>
                   </div>
-                  <span className={`text-xs font-bold uppercase tracking-widest ${
-                    boardTheme === theme.id ? 'text-brand-gold' : 'text-text-muted'
-                  }`}>
-                    {theme.name}
-                  </span>
-                </div>
-                {boardTheme === theme.id && (
-                  <motion.div 
-                    layoutId="activeTheme"
-                    className="absolute -top-2 -right-2 w-6 h-6 bg-brand-gold rounded-full flex items-center justify-center shadow-lg"
-                  >
-                    <div className="w-2 h-2 bg-bg-dark rounded-full" />
-                  </motion.div>
-                )}
-              </button>
-            ))}
+                  {boardTheme === theme.id && (
+                    <motion.div 
+                      layoutId="activeTheme"
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-brand-gold rounded-full flex items-center justify-center shadow-lg"
+                    >
+                      <div className="w-2 h-2 bg-bg-dark rounded-full" />
+                    </motion.div>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </section>
 

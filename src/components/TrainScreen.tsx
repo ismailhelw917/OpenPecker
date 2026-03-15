@@ -245,7 +245,7 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
 
   useEffect(() => {
     // Fetch repository stats
-    fetch('/api/lichess/repository')
+    fetch('/api/repository')
       .then(res => res.json())
       .then(data => {
         if (data.data) {
@@ -259,7 +259,7 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
       .catch(console.error);
 
     // Fetch all openings
-    fetch('/api/lichess/openings')
+    fetch('/api/openings')
       .then(res => res.json())
       .then(data => {
         if (data.data) {
@@ -527,20 +527,6 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
     <div className="h-screen flex flex-col bg-teal-950 text-white">
       <header className="bg-bg-darker p-6 border-b border-border-dark relative">
         <ShareButton />
-        <button
-          onClick={() => {
-            setSelectedOpening('');
-            setSelectedThemes([]);
-            setMinRating(0);
-            setMaxRating(3000);
-            setTargetPuzzleCount(20);
-            setTargetCycles(1);
-            setColorFilter('both');
-          }}
-          className="absolute top-6 left-6 text-xs font-bold text-brand-gold hover:text-white transition-colors uppercase tracking-widest"
-        >
-          Reset
-        </button>
         <h1 className="font-serif text-4xl font-bold text-brand-gold text-center">Configure Training</h1>
         <p className="text-brand-gold text-center">Set up your spaced repetition cycle.</p>
       </header>
@@ -615,6 +601,20 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
                   <h2 className="text-lg font-bold text-slate-400">Select Theme</h2>
                   <p className="text-xs text-text-muted">Choose an opening or tactical theme</p>
                 </div>
+                <button
+                  onClick={() => {
+                    setSelectedOpening('');
+                    setSelectedThemes([]);
+                    setMinRating(0);
+                    setMaxRating(3000);
+                    setTargetPuzzleCount(20);
+                    setTargetCycles(1);
+                    setColorFilter('both');
+                  }}
+                  className="text-xs font-bold text-brand-gold hover:text-white transition-colors uppercase tracking-widest"
+                >
+                  Reset
+                </button>
               </div>
 
               {/* Tabs */}
