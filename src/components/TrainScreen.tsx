@@ -437,7 +437,7 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
       setLoadingProgress(100);
       setLoadingStatus('Puzzles ready!');
       
-      if (result.status === 'success' && Array.isArray(result.puzzles) && result.puzzles.length > 0) {
+      if (result.puzzles && Array.isArray(result.puzzles) && result.puzzles.length > 0) {
         console.log('Puzzles fetched:', result.puzzles.length);
         
         let openingDisplay = '';

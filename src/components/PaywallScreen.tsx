@@ -28,43 +28,6 @@ interface PaywallScreenProps {
 }
 
 export default function PaywallScreen({ onClose }: PaywallScreenProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const deviceId = useChessStore((s) => s.deviceId);
-  const user = useChessStore((s) => s.user);
-
-  const handleCheckout = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ deviceId, userId: user?.id }),
-      });
-
-      const result = await response.json();
-
-      if (result.error) {
-        throw new Error(result.error.message);
-      }
-
-      if (result.data?.url) {
-        // Open Stripe checkout in the same window (or a new tab if preferred)
-        window.location.href = result.data.url;
-      } else {
-        throw new Error('No checkout URL returned');
-      }
-    } catch (err: any) {
-      console.error('Checkout error:', err);
-      setError(err.message || 'An error occurred during checkout. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const features = [
     'Unlock all 150+ opening variations',
     'Advanced performance analytics',
@@ -123,49 +86,34 @@ export default function PaywallScreen({ onClose }: PaywallScreenProps) {
           </div>
 
           <div className="space-y-4 mb-8">
-            <div className="bg-bg-card border border-border-dark rounded-2xl p-4 flex items-center justify-between">
+            <button
+              onClick={() => window.location.href = 'https://buy.stripe.com/9B6fZhbbO42I7yc4jZ48000'}
+              className="w-full bg-bg-card border border-border-dark rounded-2xl p-4 flex items-center justify-between hover:border-brand-gold/50 transition-colors"
+            >
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-text-muted mb-1">Monthly</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-brand-gold">$4.99</span>
+                  <span className="text-2xl font-bold text-brand-gold">€4.99</span>
                   <span className="text-xs text-text-muted">/month</span>
                 </div>
               </div>
               <Zap size={20} className="text-brand-gold" />
-            </div>
+            </button>
 
-            <div className="bg-bg-card border border-brand-gold/30 rounded-2xl p-4 flex items-center justify-between">
+            <button
+              onClick={() => window.location.href = 'https://buy.stripe.com/8x214n3Jm1UAf0EaIn48001'}
+              className="w-full bg-bg-card border border-brand-gold/30 rounded-2xl p-4 flex items-center justify-between hover:border-brand-gold transition-colors"
+            >
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-brand-gold mb-1">Lifetime Access</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-brand-gold">$49</span>
+                  <span className="text-2xl font-bold text-brand-gold">€49</span>
                   <span className="text-xs text-text-muted">/once</span>
                 </div>
               </div>
               <Shield size={20} className="text-brand-gold" />
-            </div>
+            </button>
           </div>
-
-          {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-sm text-center">
-              {error}
-            </div>
-          )}
-
-          <button
-            onClick={handleCheckout}
-            disabled={isLoading}
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-brand-gold text-bg-dark font-bold text-sm tracking-[2px] uppercase shadow-[0_4px_20px_rgba(212,175,55,0.2)] hover:scale-[1.02] transition-transform disabled:opacity-70 disabled:hover:scale-100"
-          >
-            {isLoading ? (
-              <div className="w-5 h-5 border-2 border-bg-dark/30 border-t-bg-dark rounded-full animate-spin" />
-            ) : (
-              <>
-                <CreditCard size={18} />
-                <span>Upgrade Now</span>
-              </>
-            )}
-          </button>
           
           <p className="text-center text-[10px] text-text-muted mt-4">
             Secure payment processed by Stripe. Cancel anytime.
