@@ -416,9 +416,9 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
         });
       }, 500);
 
-      console.log('Initiating fetch to:', `/api/puzzles/batch?theme=${themes}&count=${targetPuzzleCount}&minRating=${minRating}&maxRating=${maxRating}&color=${colorFilter}`);
+      console.log('Initiating fetch to:', `/api/puzzles/batch?theme=${encodeURIComponent(themes)}&count=${targetPuzzleCount}&minRating=${minRating}&maxRating=${maxRating}&color=${encodeURIComponent(colorFilter)}`);
       const fetchStartTime = Date.now();
-      const response = await fetch(`/api/puzzles/batch?theme=${themes}&count=${targetPuzzleCount}&minRating=${minRating}&maxRating=${maxRating}&color=${colorFilter}`, {
+      const response = await fetch(`/api/puzzles/batch?theme=${encodeURIComponent(themes)}&count=${targetPuzzleCount}&minRating=${minRating}&maxRating=${maxRating}&color=${encodeURIComponent(colorFilter)}`, {
         signal: controller.signal
       });
       console.log('Fetch completed. Response status:', response.status, 'Time taken:', Date.now() - fetchStartTime, 'ms');

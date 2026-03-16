@@ -258,7 +258,7 @@ async function startServer() {
           rows.forEach((row: any) => {
             try {
               const p = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
-              if (p && p.puzzle && !puzzleIds.has(p.puzzle.id) && (!colorFilter || p.game.color === colorFilter)) {
+              if (p && p.puzzle && !puzzleIds.has(p.puzzle.id) && (!colorFilter || colorFilter === 'both' || p.game.color === colorFilter)) {
                 puzzles.push(p);
                 puzzleIds.add(p.puzzle.id);
               }
@@ -282,7 +282,7 @@ async function startServer() {
           try {
             const p = JSON.parse(row.data);
             const puzzleColor = p.puzzle.initialPly % 2 === 0 ? 'white' : 'black';
-            if (!puzzleIds.has(p.puzzle.id) && (!colorFilter || puzzleColor === colorFilter)) {
+            if (!puzzleIds.has(p.puzzle.id) && (!colorFilter || colorFilter === 'both' || puzzleColor === colorFilter)) {
               puzzles.push(p);
               puzzleIds.add(p.puzzle.id);
             }
@@ -306,7 +306,7 @@ async function startServer() {
           try {
             const p = JSON.parse(row.data);
             const puzzleColor = p.puzzle.initialPly % 2 === 0 ? 'white' : 'black';
-            if (!puzzleIds.has(p.puzzle.id) && (!colorFilter || puzzleColor === colorFilter)) {
+            if (!puzzleIds.has(p.puzzle.id) && (!colorFilter || colorFilter === 'both' || puzzleColor === colorFilter)) {
               puzzles.push(p);
               puzzleIds.add(p.puzzle.id);
             }
@@ -325,7 +325,7 @@ async function startServer() {
           try {
             const p = JSON.parse(row.data);
             const puzzleColor = p.puzzle.initialPly % 2 === 0 ? 'white' : 'black';
-            if (!puzzleIds.has(p.puzzle.id) && (!colorFilter || puzzleColor === colorFilter)) {
+            if (!puzzleIds.has(p.puzzle.id) && (!colorFilter || colorFilter === 'both' || puzzleColor === colorFilter)) {
               puzzles.push(p);
               puzzleIds.add(p.puzzle.id);
             }
@@ -343,7 +343,7 @@ async function startServer() {
         rows.forEach(row => {
           try {
             const p = JSON.parse(row.data);
-            if (!puzzleIds.has(p.puzzle.id) && (!colorFilter || p.game.color === colorFilter)) {
+            if (!puzzleIds.has(p.puzzle.id) && (!colorFilter || colorFilter === 'both' || p.game.color === colorFilter)) {
               puzzles.push(p);
               puzzleIds.add(p.puzzle.id);
             }
