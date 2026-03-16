@@ -607,7 +607,7 @@ export default function SessionScreen({ onNavigate }: SessionScreenProps) {
     console.log('handlePuzzleSuccess called', { isAutoSolve, autoAdvance });
     setStatus('correct');
     if (!isAutoSolve && isFirstTry) {
-      setCorrectCount(prev => prev + 1);
+      setCorrectCount(correctCount + 1);
       if (puzzleStartTime) {
         addPuzzleDuration(Date.now() - puzzleStartTime);
       }
@@ -635,12 +635,16 @@ export default function SessionScreen({ onNavigate }: SessionScreenProps) {
       });
 
       addCycleRecord({
+        id: Date.now().toString(),
         setId: activeSet.id,
         cycle: activeSet.cyclesCompleted + 1,
         totalPuzzles: puzzles.length,
         correctCount: correctCount,
         totalTimeMs: totalTimeMs,
-        completedAt: new Date().toISOString()
+        completedAt: new Date().toISOString(),
+        timestamp: Date.now(),
+        openingSlug: activeSet.openingSlug,
+        accuracy: accuracy
       });
     }
   };
@@ -668,7 +672,7 @@ export default function SessionScreen({ onNavigate }: SessionScreenProps) {
         moves.map((move) => {
           newSquares[move.to] = {
             background:
-              game.get(move.to as any) && game.get(move.to as any).color !== piece.color
+              game.get(move.to as any) && game.get(move.to as any)?.color !== piece.color
                 ? 'radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)'
                 : 'radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)',
             borderRadius: '50%',
@@ -700,7 +704,7 @@ export default function SessionScreen({ onNavigate }: SessionScreenProps) {
         moves.map((move) => {
           newSquares[move.to] = {
             background:
-              game.get(move.to as any) && game.get(move.to as any).color !== piece.color
+              game.get(move.to as any) && game.get(move.to as any)?.color !== piece.color
                 ? 'radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)'
                 : 'radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)',
             borderRadius: '50%',
@@ -934,12 +938,6 @@ export default function SessionScreen({ onNavigate }: SessionScreenProps) {
       {/* Header */}
       <div className="relative border-b border-border-dark bg-bg-card">
         <div className="flex items-center justify-between px-4 py-3">
-          <button
-            onClick={resetPuzzle}
-            className="text-xs font-bold text-brand-gold hover:text-white transition-colors uppercase tracking-widest"
-          >
-            Reset
-          </button>
           <div className="text-center flex-1">
             <h2 className="text-sm font-bold text-brand-gold uppercase tracking-widest">
               {activeSet?.openingDisplay || 'Training'}

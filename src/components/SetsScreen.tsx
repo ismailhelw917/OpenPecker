@@ -76,7 +76,6 @@ export default function SetsScreen({ onGoToTrain, onResume }: SetsScreenProps) {
                     set={set} 
                     onResume={() => handleResume(set)}
                     onDelete={() => setSetToDelete(set.id)}
-                    onShare={() => handleShare(set)}
                   />
                 ))}
               </div>
@@ -96,7 +95,6 @@ export default function SetsScreen({ onGoToTrain, onResume }: SetsScreenProps) {
                     set={set} 
                     onResume={() => handleResume(set)}
                     onDelete={() => setSetToDelete(set.id)}
-                    onShare={() => handleShare(set)}
                   />
                 ))}
               </div>

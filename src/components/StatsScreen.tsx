@@ -39,7 +39,7 @@ export default function StatsScreen({ onShowPaywall }: StatsScreenProps) {
   }
 
   React.useEffect(() => {
-    fetch('/api/repository')
+    fetch('/api/lichess/repository')
       .then(res => res.json())
       .then(data => {
         if (data.data) {

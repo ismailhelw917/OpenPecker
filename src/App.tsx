@@ -15,7 +15,8 @@ import BottomNav from './components/BottomNav';
 const App = () => {
   const [screen, setScreen] = useState<Screen>('home');
   const mainScreens: Screen[] = ['home', 'train', 'sets', 'stats', 'settings'];
-  const { fitToScreen } = useChessStore();
+  const { fitToScreen = 100 } = useChessStore();
+  console.log('[DEBUG] App rendering, fitToScreen:', fitToScreen);
 
   return (
     <div className="min-h-screen bg-neutral-100 flex flex-col">
@@ -34,7 +35,7 @@ const App = () => {
             onNavigate={(s) => setScreen(s)}
           />
         )}
-        {screen === 'paywall' && <PaywallScreen onBack={() => setScreen('home')} />}
+        {screen === 'paywall' && <PaywallScreen onClose={() => setScreen('home')} />}
         {screen === 'register' && <RegisterScreen onBack={() => setScreen('home')} />}
         {screen === 'session' && <SessionScreen onNavigate={(s) => setScreen(s)} />}
         {screen === 'sets' && (
@@ -43,8 +44,8 @@ const App = () => {
             onResume={() => setScreen('session')} 
           />
         )}
-        {screen === 'settings' && <SettingsScreen onBack={() => setScreen('home')} onShowPaywall={() => setScreen('paywall')} />}
-        {screen === 'stats' && <StatsScreen onBack={() => setScreen('home')} />}
+        {screen === 'settings' && <SettingsScreen onShowPaywall={() => setScreen('paywall')} />}
+        {screen === 'stats' && <StatsScreen onShowPaywall={() => setScreen('paywall')} />}
         {screen === 'personalized' && (
           <PersonalizedScreen 
             onStart={() => setScreen('session')} 

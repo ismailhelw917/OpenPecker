@@ -245,7 +245,7 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
 
   useEffect(() => {
     // Fetch repository stats
-    fetch('/api/repository')
+    fetch('/api/lichess/repository')
       .then(res => res.json())
       .then(data => {
         if (data.data) {
@@ -259,7 +259,7 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
       .catch(console.error);
 
     // Fetch all openings
-    fetch('/api/openings')
+    fetch('/api/lichess/openings')
       .then(res => res.json())
       .then(data => {
         if (data.data) {
@@ -389,7 +389,7 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
     const controller = new AbortController();
     setAbortController(controller);
     const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
-    let progressInterval: NodeJS.Timeout;
+    let progressInterval: NodeJS.Timeout | null = null;
     
     try {
       const themes = selectedThemes.length > 0 ? selectedThemes.join(',') : selectedOpening;
@@ -400,7 +400,7 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
       progressInterval = setInterval(() => {
         setLoadingProgress(prev => {
           if (prev >= 99) {
-            clearInterval(progressInterval);
+            if (progressInterval) clearInterval(progressInterval);
             return 99;
           }
           const increment = prev < 30 ? 25 : (prev < 70 ? 15 : (prev < 90 ? 5 : 2));
@@ -431,7 +431,7 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
       }
 
       clearTimeout(timeoutId);
-      clearInterval(progressInterval);
+      if (progressInterval) clearInterval(progressInterval);
       setAbortController(null);
       
       setLoadingProgress(100);
@@ -597,24 +597,26 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
                 <div className="w-10 h-10 rounded-xl bg-brand-gold/10 flex items-center justify-center">
                   <Target size={20} className="text-brand-gold" />
                 </div>
-                <div className="flex-1">
-                  <h2 className="text-lg font-bold text-slate-400">Select Theme</h2>
-                  <p className="text-xs text-text-muted">Choose an opening or tactical theme</p>
+                <div className="flex-1 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-400">Select Theme</h2>
+                    <p className="text-xs text-text-muted">Choose an opening or tactical theme</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedOpening('');
+                      setSelectedThemes([]);
+                      setMinRating(0);
+                      setMaxRating(3000);
+                      setTargetPuzzleCount(20);
+                      setTargetCycles(1);
+                      setColorFilter('both');
+                    }}
+                    className="text-xs font-bold text-brand-gold hover:text-white transition-colors uppercase tracking-widest"
+                  >
+                    Reset
+                  </button>
                 </div>
-                <button
-                  onClick={() => {
-                    setSelectedOpening('');
-                    setSelectedThemes([]);
-                    setMinRating(0);
-                    setMaxRating(3000);
-                    setTargetPuzzleCount(20);
-                    setTargetCycles(1);
-                    setColorFilter('both');
-                  }}
-                  className="text-xs font-bold text-brand-gold hover:text-white transition-colors uppercase tracking-widest"
-                >
-                  Reset
-                </button>
               </div>
 
               {/* Tabs */}

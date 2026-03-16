@@ -16,6 +16,7 @@ export default function HomeScreen({ onStartTraining, onShowPaywall, onRegister 
   const logout = useChessStore((s) => s.logout);
 
   useEffect(() => {
+    console.log('[DEBUG] HomeScreen useEffect');
     initDeviceId().catch(() => null);
     loadPersistedHistory().catch(() => null);
   }, []);

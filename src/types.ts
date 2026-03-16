@@ -4,23 +4,27 @@ export type SavedSet = {
   id: string;
   name: string;
   status: 'active' | 'completed' | 'paused';
-  // Add other properties as needed
+  openingDisplay: string;
+  openingSlug: string;
+  puzzles: any[];
+  cyclesCompleted: number;
+  targetCycles: number;
+  bestAccuracy: number;
+  lastPlayedAt: string;
+  totalAttempts: number;
 };
 
 export type CycleRecord = {
   id: string;
+  setId: string;
+  cycle: number;
   totalPuzzles: number;
   correctCount: number;
   timestamp: number;
   completedAt: string;
   openingSlug: string;
   totalTimeMs: number;
+  accuracy: number;
 };
 
-export type PuzzleData = {
-  id: string;
-  fen: string;
-  moves: string[];
-  rating: number;
-  themes: string[];
-};
+export type PuzzleData = any;

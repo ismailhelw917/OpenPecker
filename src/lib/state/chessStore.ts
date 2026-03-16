@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { SavedSet, CycleRecord, PuzzleData } from './types';
+import { SavedSet, CycleRecord, PuzzleData } from '../../types';
 
 interface ChessState {
   isPremium: boolean;

@@ -9,7 +9,7 @@ interface SettingsScreenProps {
 }
 
 export default function SettingsScreen({ onShowPaywall }: SettingsScreenProps) {
-  const { boardTheme, setBoardTheme, isPremium, setPremium } = useChessStore();
+  const { boardTheme, setBoardTheme, isPremium, setPremium, fitToScreen, setFitToScreen } = useChessStore();
 
   const themes = [
     { id: 'brown', name: 'Classic Wood', light: '#f0d9b5', dark: '#b58863' },
