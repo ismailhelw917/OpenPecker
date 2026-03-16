@@ -29,7 +29,23 @@ const __dirname = path.dirname(__filename);
 let bigquery: BigQuery | null = null;
 function getBigQuery() {
   if (!bigquery) {
-    bigquery = new BigQuery();
+    const projectId = process.env.BIGQUERY_PROJECT_ID;
+    const clientEmail = process.env.BIGQUERY_CLIENT_EMAIL;
+    const privateKey = process.env.BIGQUERY_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+    if (projectId && clientEmail && privateKey) {
+      bigquery = new BigQuery({
+        projectId,
+        credentials: {
+          client_email: clientEmail,
+          private_key: privateKey,
+        }
+      });
+      console.log('[SERVER] BigQuery initialized with provided credentials.');
+    } else {
+      console.log('[SERVER] BigQuery credentials missing from environment variables. Initializing with Application Default Credentials.');
+      bigquery = new BigQuery();
+    }
   }
   return bigquery;
 }
@@ -196,8 +212,10 @@ async function startServer() {
     const maxR = parseInt(maxRating as string) || 3000;
     const requestedCount = parseInt(count as string) || 10;
     const themeStr = theme as string;
-    const colorFilter = color as string;
-
+    let colorFilter = color as string;
+    if (colorFilter === 'undefined' || colorFilter === 'null') {
+      colorFilter = 'both';
+    }
     console.log(`[BATCH] Parsed: rating=${minR}-${maxR}, count=${requestedCount}, theme=${themeStr}, color=${colorFilter}`);
     if (!themeStr) {
       console.warn(`[BATCH] Missing required fields: theme=${themeStr}`);
@@ -349,6 +367,50 @@ async function startServer() {
             }
           } catch (e) {}
         });
+      }
+
+      // 5. Lichess API Fallback: If STILL not enough, fetch from Lichess API
+      let needed = requestedCount - puzzles.length;
+      if (needed > 0) {
+        console.log(`[BATCH] Lichess Fallback: Fetching ${needed} more puzzles for themes: ${themeStr}`);
+        const insertStmt = db.prepare('INSERT OR IGNORE INTO puzzles (id, theme, rating, data) VALUES (?, ?, ?, ?)');
+        
+        for (let i = 0; i < needed; i++) {
+          const currentTheme = mappedThemes[i % mappedThemes.length] || 'opening';
+          try {
+            const response = await fetch(`https://lichess.org/api/puzzle/next?theme=${encodeURIComponent(currentTheme)}`, {
+              headers: {
+                'Accept': 'application/json',
+                'User-Agent': 'OpenPecker/1.0 (ismail.helw@gmail.com)'
+              }
+            });
+            
+            if (response.ok) {
+              const puzzle = await response.json();
+              insertStmt.run(puzzle.puzzle.id, currentTheme, puzzle.puzzle.rating, JSON.stringify(puzzle));
+              
+              const puzzleColor = puzzle.puzzle.initialPly % 2 === 0 ? 'white' : 'black';
+              if (!puzzleIds.has(puzzle.puzzle.id) && (!colorFilter || colorFilter === 'both' || puzzleColor === colorFilter)) {
+                puzzles.push(puzzle);
+                puzzleIds.add(puzzle.puzzle.id);
+              } else {
+                // We got a puzzle but it didn't match our color filter, so we still need one
+                i--;
+              }
+            } else if (response.status === 429) {
+              const retryAfter = response.headers.get('Retry-After');
+              await new Promise(resolve => setTimeout(resolve, (retryAfter ? parseInt(retryAfter) : 2) * 1000));
+              i--; // Retry
+            }
+            // Small delay between puzzles
+            await new Promise(resolve => setTimeout(resolve, 100));
+          } catch (err) {
+            console.error(`[BATCH] Error fetching puzzle for ${currentTheme}:`, err);
+          }
+          
+          // If we are taking too long, just return what we have
+          if (i > 50 && puzzles.length >= requestedCount / 2) break;
+        }
       }
 
       console.log(`[BATCH] Final puzzle count: ${puzzles.length}`);
