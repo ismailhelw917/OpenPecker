@@ -145,7 +145,7 @@ export default function SettingsScreen({ onShowPaywall }: SettingsScreenProps) {
 
         {/* App Info */}
         <div className="pt-12 text-center space-y-2">
-          <p className="text-[10px] text-text-muted uppercase tracking-[4px]">OpenPecker v1.0.4</p>
+          <p className="text-[10px] text-text-muted uppercase tracking-[4px]">OpenPecker v1.1.1</p>
           <p className="text-[10px] text-text-muted">Crafted for chess mastery.</p>
         </div>
       </div>

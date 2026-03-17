@@ -196,6 +196,11 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // 1. Health check - MUST be first to respond to platform probes
+  app.get("/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
   app.use(cors({
     origin: true,
     credentials: true,
@@ -204,12 +209,30 @@ async function startServer() {
   app.use(express.json());
 
   app.use((req, res, next) => {
-    console.log(`[DEBUG] Incoming request: ${req.method} ${req.url}`);
+    const host = req.headers.host;
+    if (host === 'www.openpecker.com') {
+      return res.redirect(301, `https://openpecker.com${req.url}`);
+    }
+    console.log(`[DEBUG] Incoming request: ${req.method} ${req.url} (Host: ${host})`);
     next();
+  });
+
+  app.get('/api/version', (req, res) => {
+    res.json({ version: '1.1.1', timestamp: new Date().toISOString() });
   });
 
   app.get('/api/test', (req, res) => {
     res.json({ message: 'API is working' });
+  });
+
+  // Handle /openpecker specifically if requested
+  app.get('/openpecker', (req, res) => {
+    if (process.env.NODE_ENV === "production") {
+      res.sendFile(path.join(distPath, "index.html"));
+    } else {
+      // In dev, Vite handles this, but we can redirect to /
+      res.redirect('/');
+    }
   });
 
   // Batch puzzle endpoint as requested by user
@@ -451,10 +474,8 @@ async function startServer() {
   });
 
   // Health check endpoint
-  app.get("/health", (req, res) => {
-    res.json({ status: "ok" });
-  });
-
+  // Moved to top
+  
   // API Routes following the contract: { data: ... }
   app.use("/api/sample", sampleRouter);
   app.use("/api/chess", chessRouter);
@@ -729,7 +750,7 @@ async function startServer() {
   // Get list of openings
   app.get("/api/openings", (req, res) => {
     try {
-      const openingsPath = path.join(__dirname, "../data/openings.json");
+      const openingsPath = path.join(process.cwd(), "data/openings.json");
       if (fs.existsSync(openingsPath)) {
         const data = fs.readFileSync(openingsPath, 'utf8');
         const openings = JSON.parse(data);
