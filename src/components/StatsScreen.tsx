@@ -4,6 +4,7 @@ import { useChessStore } from '../lib/state/chessStore';
 import { TrendingUp, Flame, Target, Clock, Trophy, Lock, Database, BrainCircuit } from 'lucide-react';
 import { ShareButton } from './ShareButton';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { fetchBigQueryStats } from '../services/bigQuery';
 
 interface StatsScreenProps {
   onShowPaywall: () => void;
@@ -39,8 +40,7 @@ export default function StatsScreen({ onShowPaywall }: StatsScreenProps) {
   }
 
   React.useEffect(() => {
-    fetch('/api/bigquery/puzzles/stats')
-      .then(res => res.json())
+    fetchBigQueryStats()
       .then(data => {
         if (data.data) {
           setRepoStats(data.data.sort((a: any, b: any) => b.count - a.count));

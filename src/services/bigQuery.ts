@@ -15,3 +15,12 @@ export async function fetchBigQueryOpenings() {
   }
   return await response.json();
 }
+
+export async function fetchBigQueryStats() {
+  const response = await fetch('/api/bigquery/puzzles/stats');
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error?.message || 'Failed to fetch stats from BigQuery');
+  }
+  return await response.json();
+}

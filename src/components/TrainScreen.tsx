@@ -4,7 +4,7 @@ import { useChessStore } from '../lib/state/chessStore';
 import { Screen } from '../types';
 import { Search, Lock, Play, Clock, Target, Repeat, Database, User, Download, CheckCircle2, Home, BarChart2, Settings } from 'lucide-react';
 import { ShareButton } from './ShareButton';
-import { fetchBigQueryPuzzles, fetchBigQueryOpenings } from '../bigQueryService';
+import { fetchBigQueryPuzzles, fetchBigQueryOpenings } from '../services/bigQuery';
 
 const PawnIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
   <svg 
