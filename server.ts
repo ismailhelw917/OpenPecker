@@ -554,17 +554,17 @@ async function startServer() {
 
   // BigQuery Puzzle Query
   app.get("/api/bigquery/puzzles", async (req, res) => {
-    const { theme, minRating, maxRating, count = 10 } = req.query;
+    const { theme, minRating, maxRating, count = 20 } = req.query;
     
-    // NOTE: User must configure their own BigQuery table ID
-    const tableId = process.env.BIGQUERY_TABLE_ID || 'your-project.your_dataset.puzzles';
+    // Using the user's specific table path
+    const tableId = process.env.BIGQUERY_TABLE_ID || 'chess_data.puzzles';
 
+    // Standard SQL query using UNNEST for array themes and ORDER BY RAND()
     const query = `
-      SELECT *
+      SELECT puzzle_id, fen, moves, rating, themes, color
       FROM \`${tableId}\`
-      WHERE theme = @theme
-      AND rating >= @minRating
-      AND rating <= @maxRating
+      WHERE rating BETWEEN @minRating AND @maxRating
+      AND @theme IN UNNEST(themes)
       ORDER BY RAND()
       LIMIT @count
     `;
@@ -572,19 +572,36 @@ async function startServer() {
     const options = {
       query: query,
       params: { 
-        theme: theme, 
+        theme: theme as string, 
         minRating: parseInt(minRating as string) || 0, 
         maxRating: parseInt(maxRating as string) || 3000, 
-        count: parseInt(count as string) || 10 
+        count: parseInt(count as string) || 20 
       },
     };
 
     try {
       const bq = getBigQuery();
       const [rows] = await bq.query(options);
+      
+      // Error handling: check if results are empty
+      if (!rows || rows.length === 0) {
+        return res.status(404).json({ 
+          error: { 
+            message: `No puzzles found for theme "${theme}" in the rating range ${minRating}-${maxRating}.`,
+            code: "NO_RESULTS_FOUND" 
+          } 
+        });
+      }
+
       res.json({ data: rows });
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      console.error('[BIGQUERY ERROR]', error);
+      res.status(500).json({ 
+        error: { 
+          message: error.message, 
+          code: "BIGQUERY_QUERY_ERROR" 
+        } 
+      });
     }
   });
 
