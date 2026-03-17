@@ -1,4 +1,6 @@
+console.log("[SERVER] Starting server.ts...");
 import express from "express";
+console.log('[SERVER] Starting...');
 import { createServer as createViteServer } from "vite";
 import { BigQuery } from "@google-cloud/bigquery";
 import path from "path";
@@ -27,7 +29,23 @@ const __dirname = path.dirname(__filename);
 let bigquery: BigQuery | null = null;
 function getBigQuery() {
   if (!bigquery) {
-    bigquery = new BigQuery();
+    const projectId = process.env.BIGQUERY_PROJECT_ID;
+    const clientEmail = process.env.BIGQUERY_CLIENT_EMAIL;
+    const privateKey = process.env.BIGQUERY_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+    if (projectId && clientEmail && privateKey) {
+      bigquery = new BigQuery({
+        projectId,
+        credentials: {
+          client_email: clientEmail,
+          private_key: privateKey,
+        }
+      });
+      console.log('[SERVER] BigQuery initialized with provided credentials.');
+    } else {
+      console.log('[SERVER] BigQuery credentials missing from environment variables. Initializing with Application Default Credentials.');
+      bigquery = new BigQuery();
+    }
   }
   return bigquery;
 }
@@ -68,6 +86,39 @@ try {
         rating INTEGER,
         PRIMARY KEY (id, theme)
       );
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        username TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        is_premium INTEGER DEFAULT 0
+      );
+      CREATE TABLE IF NOT EXISTS puzzle_sets (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        device_id TEXT,
+        opening_slug TEXT,
+        opening_display TEXT,
+        puzzle_count INTEGER,
+        target_cycles INTEGER,
+        cycles_completed INTEGER,
+        status TEXT,
+        best_accuracy REAL,
+        total_attempts INTEGER,
+        puzzles_json TEXT,
+        last_played_at DATETIME
+      );
+      CREATE TABLE IF NOT EXISTS cycle_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT,
+        device_id TEXT,
+        set_id TEXT,
+        cycle INTEGER,
+        total_puzzles INTEGER,
+        correct_count INTEGER,
+        total_time_ms INTEGER,
+        completed_at DATETIME
+      );
       CREATE INDEX IF NOT EXISTS idx_theme ON puzzles(theme);
       CREATE INDEX IF NOT EXISTS idx_rating ON puzzles(rating);
     `);
@@ -75,16 +126,22 @@ try {
 
   // Populate from puzzles_static.json if empty
   const count = (db.prepare('SELECT COUNT(*) as count FROM puzzles').get() as any).count;
-  if (count === 0) {
+  console.log(`[SERVER] Database count: ${count}`);
+  if (false) {
     console.log('Populating database from puzzles_static.json...');
-    const data = fs.readFileSync(path.join(__dirname, 'puzzles_static.json'), 'utf8');
+    const dataPath = path.join(process.cwd(), 'data/puzzles_static.json');
+    console.log(`[SERVER] Reading from: ${dataPath}`);
+    const data = fs.readFileSync(dataPath, 'utf8');
+    console.log(`[SERVER] Read file, parsing JSON...`);
     const puzzles = JSON.parse(data);
+    console.log(`[SERVER] Found ${puzzles.length} puzzles in JSON.`);
     const insertStmt = db.prepare('INSERT OR IGNORE INTO puzzles (id, theme, rating, data) VALUES (?, ?, ?, ?)');
     let populatedCount = 0;
     
+    console.log(`[SERVER] Starting transaction...`);
     db.transaction(() => {
-      for (const puzzle of puzzles) {
-        if (puzzle.puzzle && puzzle.puzzle.themes) {
+      for (const puzzle of puzzles.slice(0, 100)) {
+        if (puzzle.puzzle && puzzle.puzzle.id && puzzle.puzzle.themes) {
           for (const theme of puzzle.puzzle.themes) {
             insertStmt.run(puzzle.puzzle.id, theme, puzzle.puzzle.rating, JSON.stringify(puzzle));
             populatedCount++;
@@ -92,6 +149,7 @@ try {
         }
       }
     })();
+    console.log(`[SERVER] Transaction finished.`);
     
     console.log(`Populated ${puzzles.length} unique puzzles (${populatedCount} theme-entries).`);
   }
@@ -112,6 +170,7 @@ function getStripe() {
 }
 
 async function startServer() {
+  console.log('[SERVER] startServer called');
   // Verify schema
   try {
     const info = db.pragma('table_info(puzzles)') as any[];
@@ -123,12 +182,19 @@ async function startServer() {
     }
     const totalPuzzles = (db.prepare('SELECT COUNT(*) as count FROM puzzles').get() as any).count;
     console.log(`[SERVER] Reservoir contains ${totalPuzzles} puzzles.`);
+    if (totalPuzzles === 0) {
+      console.log('[SERVER] Populating dummy data...');
+      const insertStmt = db.prepare('INSERT OR IGNORE INTO puzzles (id, theme, rating, data) VALUES (?, ?, ?, ?)');
+      insertStmt.run('test1', 'opening', 1500, JSON.stringify({ puzzle: { id: 'test1', initialPly: 0 }, game: { color: 'white' } }));
+      insertStmt.run('test2', 'opening', 1500, JSON.stringify({ puzzle: { id: 'test2', initialPly: 0 }, game: { color: 'white' } }));
+      console.log('[SERVER] Dummy data populated.');
+    }
   } catch (e) {
     console.error('Schema verification failed:', e);
   }
 
   const app = express();
-  const PORT = process.env.PORT || 3000;
+  const PORT = 3000;
 
   app.use(cors({
     origin: true,
@@ -136,6 +202,253 @@ async function startServer() {
   }));
 
   app.use(express.json());
+
+  app.use((req, res, next) => {
+    console.log(`[DEBUG] Incoming request: ${req.method} ${req.url}`);
+    next();
+  });
+
+  app.get('/api/test', (req, res) => {
+    res.json({ message: 'API is working' });
+  });
+
+  // Batch puzzle endpoint as requested by user
+  app.get('/api/puzzles/batch', async (req, res) => {
+    console.log('[DEBUG] /api/puzzles/batch called');
+    console.log('[BATCH] Request received:', req.query);
+    const { minRating, maxRating, count = 10, theme, color } = req.query;
+    const minR = parseInt(minRating as string) || 0;
+    const maxR = parseInt(maxRating as string) || 3000;
+    const requestedCount = parseInt(count as string) || 10;
+    const themeStr = theme as string;
+    let colorFilter = color as string;
+    if (colorFilter === 'undefined' || colorFilter === 'null') {
+      colorFilter = 'both';
+    }
+    console.log(`[BATCH] Parsed: rating=${minR}-${maxR}, count=${requestedCount}, theme=${themeStr}, color=${colorFilter}`);
+    if (!themeStr) {
+      console.warn(`[BATCH] Missing required fields: theme=${themeStr}`);
+      return res.status(400).json({ error: "Theme is required." });
+    }
+    const rawThemes = themeStr.split(',').map(t => t.trim()).filter(t => t.length > 0);
+    console.log(`[BATCH] Raw themes:`, rawThemes);
+    try {
+      if (rawThemes.length === 0) {
+        return res.status(400).json({ error: "At least one valid theme is required." });
+      }
+
+      // Normalize themes: "Sicilian Defense" -> "sicilianDefense", "Checkmate" -> "mate"
+      const mappedThemes = rawThemes.map(t => {
+        if (t.toLowerCase() === 'checkmate') return 'mate';
+        if (t.toLowerCase() === 'opening') return 'opening';
+        if (t.toLowerCase() === 'middlegame') return 'middlegame';
+        if (t.toLowerCase() === 'endgame') return 'endgame';
+        
+        // Convert "Sicilian Defense" to "sicilianDefense"
+        const camelCase = t.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
+          return index === 0 ? word.toLowerCase() : word.toUpperCase();
+        }).replace(/\s+/g, '');
+        
+        return camelCase;
+      });
+      
+      const puzzles: any[] = [];
+      const puzzleIds = new Set<string>();
+      
+      console.log(`[BATCH] Searching DB for themes: ${mappedThemes.join(', ')} (from ${rawThemes.join(', ')}) between ${minR}-${maxR}`);
+      
+      // 0. Try BigQuery first if configured
+      const bigQueryTable = process.env.BIGQUERY_TABLE_ID;
+      if (bigQueryTable) {
+        console.log(`[BATCH] Attempting BigQuery fetch from ${bigQueryTable}`);
+        try {
+          const bq = getBigQuery();
+          const bqQuery = `
+            SELECT data
+            FROM \`${bigQueryTable}\`
+            WHERE theme IN UNNEST(@themes)
+            AND rating >= @minRating
+            AND rating <= @maxRating
+            ORDER BY RAND()
+            LIMIT @count
+          `;
+          const [rows] = await bq.query({
+            query: bqQuery,
+            params: { 
+              themes: mappedThemes, 
+              minRating: minR, 
+              maxRating: maxR, 
+              count: requestedCount 
+            }
+          });
+          
+          rows.forEach((row: any) => {
+            try {
+              const p = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
+              if (p && p.puzzle && !puzzleIds.has(p.puzzle.id) && (!colorFilter || colorFilter === 'both' || p.game.color === colorFilter)) {
+                puzzles.push(p);
+                puzzleIds.add(p.puzzle.id);
+              }
+            } catch (e) {}
+          });
+          console.log(`[BATCH] BigQuery found ${puzzles.length} puzzles.`);
+        } catch (bqErr: any) {
+          console.error(`[BATCH] BigQuery error:`, bqErr.message);
+        }
+      }
+
+      // 1. Fetch from DB reservoir for all themes
+      for (const t of mappedThemes) {
+        const countPerTheme = Math.ceil(requestedCount / mappedThemes.length);
+        
+        // Try both normalized and raw theme just in case
+        const rows = db.prepare('SELECT data FROM puzzles WHERE (theme = ? OR theme = ?) AND rating >= ? AND rating <= ? ORDER BY RANDOM() LIMIT ?')
+                     .all(t, rawThemes[mappedThemes.indexOf(t)], minR, maxR, countPerTheme) as { data: string }[];
+        
+        rows.forEach(row => {
+          try {
+            const p = JSON.parse(row.data);
+            const puzzleColor = p.puzzle.initialPly % 2 === 0 ? 'white' : 'black';
+            if (!puzzleIds.has(p.puzzle.id) && (!colorFilter || colorFilter === 'both' || puzzleColor === colorFilter)) {
+              puzzles.push(p);
+              puzzleIds.add(p.puzzle.id);
+            }
+          } catch (e) {}
+        });
+      }
+
+      console.log(`[BATCH] Found ${puzzles.length} puzzles in DB. Needed: ${requestedCount}`);
+      
+      if (puzzles.length === 0) {
+        console.warn(`[BATCH] No puzzles found in DB for themes: ${mappedThemes.join(', ')}`);
+      }
+
+      // 2. If not enough in reservoir, try fallback to 'opening' if no puzzles found
+      if (puzzles.length === 0) {
+        console.log(`[BATCH] No puzzles found for themes: ${mappedThemes.join(', ')}. Falling back to 'opening'.`);
+        const rows = db.prepare('SELECT data FROM puzzles WHERE theme = ? AND rating >= ? AND rating <= ? ORDER BY RANDOM() LIMIT ?')
+                     .all('opening', minR, maxR, requestedCount) as { data: string }[];
+        
+        rows.forEach(row => {
+          try {
+            const p = JSON.parse(row.data);
+            const puzzleColor = p.puzzle.initialPly % 2 === 0 ? 'white' : 'black';
+            if (!puzzleIds.has(p.puzzle.id) && (!colorFilter || colorFilter === 'both' || puzzleColor === colorFilter)) {
+              puzzles.push(p);
+              puzzleIds.add(p.puzzle.id);
+            }
+          } catch (e) {}
+        });
+      }
+
+      // 3. Fallback: If still not enough, just get ANY puzzles from DB within rating range
+      if (puzzles.length < requestedCount) {
+        const needed = requestedCount - puzzles.length;
+        console.log(`[BATCH] Fallback: Searching DB for ${needed} puzzles in rating range ${minR}-${maxR}`);
+        const rows = db.prepare('SELECT data FROM puzzles WHERE rating >= ? AND rating <= ? ORDER BY RANDOM() LIMIT ?')
+                     .all(minR, maxR, needed) as { data: string }[];
+        
+        rows.forEach(row => {
+          try {
+            const p = JSON.parse(row.data);
+            const puzzleColor = p.puzzle.initialPly % 2 === 0 ? 'white' : 'black';
+            if (!puzzleIds.has(p.puzzle.id) && (!colorFilter || colorFilter === 'both' || puzzleColor === colorFilter)) {
+              puzzles.push(p);
+              puzzleIds.add(p.puzzle.id);
+            }
+          } catch (e) {}
+        });
+      }
+
+      // 4. Ultimate Fallback: If STILL not enough, ignore rating range and just get ANY puzzles
+      if (puzzles.length < requestedCount) {
+        const needed = requestedCount - puzzles.length;
+        console.log(`[BATCH] Ultimate Fallback: Ignoring rating range, getting ${needed} random puzzles`);
+        const rows = db.prepare('SELECT data FROM puzzles ORDER BY RANDOM() LIMIT ?')
+                     .all(needed) as { data: string }[];
+        
+        rows.forEach(row => {
+          try {
+            const p = JSON.parse(row.data);
+            if (!puzzleIds.has(p.puzzle.id) && (!colorFilter || colorFilter === 'both' || p.game.color === colorFilter)) {
+              puzzles.push(p);
+              puzzleIds.add(p.puzzle.id);
+            }
+          } catch (e) {}
+        });
+      }
+
+      // 5. Lichess API Fallback: If STILL not enough, fetch from Lichess API
+      let needed = requestedCount - puzzles.length;
+      if (needed > 0) {
+        console.log(`[BATCH] Lichess Fallback: Fetching ${needed} more puzzles for themes: ${themeStr}`);
+        const insertStmt = db.prepare('INSERT OR IGNORE INTO puzzles (id, theme, rating, data) VALUES (?, ?, ?, ?)');
+        
+        for (let i = 0; i < needed; i++) {
+          const currentTheme = mappedThemes[i % mappedThemes.length] || 'opening';
+          try {
+            const response = await fetch(`https://lichess.org/api/puzzle/next?theme=${encodeURIComponent(currentTheme)}`, {
+              headers: {
+                'Accept': 'application/json',
+                'User-Agent': 'OpenPecker/1.0 (ismail.helw@gmail.com)'
+              }
+            });
+            
+            if (response.ok) {
+              const puzzle = await response.json();
+              insertStmt.run(puzzle.puzzle.id, currentTheme, puzzle.puzzle.rating, JSON.stringify(puzzle));
+              
+              const puzzleColor = puzzle.puzzle.initialPly % 2 === 0 ? 'white' : 'black';
+              if (!puzzleIds.has(puzzle.puzzle.id) && (!colorFilter || colorFilter === 'both' || puzzleColor === colorFilter)) {
+                puzzles.push(puzzle);
+                puzzleIds.add(puzzle.puzzle.id);
+              } else {
+                // We got a puzzle but it didn't match our color filter, so we still need one
+                i--;
+              }
+            } else if (response.status === 429) {
+              const retryAfter = response.headers.get('Retry-After');
+              await new Promise(resolve => setTimeout(resolve, (retryAfter ? parseInt(retryAfter) : 2) * 1000));
+              i--; // Retry
+            }
+            // Small delay between puzzles
+            await new Promise(resolve => setTimeout(resolve, 100));
+          } catch (err) {
+            console.error(`[BATCH] Error fetching puzzle for ${currentTheme}:`, err);
+          }
+          
+          // If we are taking too long, just return what we have
+          if (i > 50 && puzzles.length >= requestedCount / 2) break;
+        }
+      }
+
+      console.log(`[BATCH] Final puzzle count: ${puzzles.length}`);
+
+      if (puzzles.length === 0) {
+        // Last resort: any puzzles at all
+        const rows = db.prepare('SELECT data FROM puzzles ORDER BY RANDOM() LIMIT ?')
+                     .all(requestedCount) as { data: string }[];
+        rows.forEach(row => {
+          try {
+            puzzles.push(JSON.parse(row.data));
+          } catch (e) {}
+        });
+      }
+
+      res.json({
+        status: "success",
+        puzzles: puzzles.sort(() => 0.5 - Math.random()).slice(0, requestedCount)
+      });
+    } catch (err: any) {
+      console.error("[BATCH] Global error:", err);
+      res.status(500).json({ status: "error", error: "Failed to fetch puzzle reservoir.", details: err.message });
+    }
+  });
+
+  app.use((req, res, next) => {
+    console.log(`[SERVER] Request: ${req.method} ${req.url}`);
+    next();
+  });
 
   // Health check endpoint
   app.get("/health", (req, res) => {
@@ -148,8 +461,10 @@ async function startServer() {
 
   // Auth Routes
   app.post("/api/auth/register", (req, res) => {
+    console.log('[REGISTER] Request received:', req.body);
     const { username, email, password } = req.body;
     if (!username || !email || !password) {
+      console.warn('[REGISTER] Missing fields');
       return res.status(400).json({ error: { message: "Missing required fields", code: "MISSING_FIELDS" } });
     }
 
@@ -159,11 +474,14 @@ async function startServer() {
       const passwordHash = `${salt}:${hash}`;
       const id = crypto.randomUUID();
 
+      console.log('[REGISTER] Inserting user:', { id, username, email });
       const stmt = db.prepare("INSERT INTO users (id, username, email, password_hash) VALUES (?, ?, ?, ?)");
       stmt.run(id, username, email, passwordHash);
+      console.log('[REGISTER] User inserted successfully');
 
       res.json({ data: { id, username, email, isPremium: false } });
     } catch (error: any) {
+      console.error('[REGISTER] Error:', error);
       if (error.code === "SQLITE_CONSTRAINT") {
         return res.status(400).json({ error: { message: "Username or email already exists", code: "USER_EXISTS" } });
       }
@@ -250,6 +568,7 @@ async function startServer() {
   });
 
   // Lichess OAuth
+  const pkceVerifiers = new Map<string, string>();
   app.get('/api/auth/lichess/url', (req, res) => {
     const state = crypto.randomBytes(16).toString('hex');
     const codeVerifier = crypto.randomBytes(32).toString('hex');
@@ -407,10 +726,10 @@ async function startServer() {
     }
   });
 
-  // Get list of openings from openings.json
-  app.get("/api/lichess/openings", (req, res) => {
+  // Get list of openings
+  app.get("/api/openings", (req, res) => {
     try {
-      const openingsPath = path.join(__dirname, "openings.json");
+      const openingsPath = path.join(__dirname, "../data/openings.json");
       if (fs.existsSync(openingsPath)) {
         const data = fs.readFileSync(openingsPath, 'utf8');
         const openings = JSON.parse(data);
@@ -687,224 +1006,6 @@ async function startServer() {
     }
   });
 
-  // Batch puzzle endpoint as requested by user
-  app.get('/api/puzzles/batch', async (req, res) => {
-    const { minRating, maxRating, count = 10, theme } = req.query;
-    const minR = parseInt(minRating as string) || 0;
-    const maxR = parseInt(maxRating as string) || 3000;
-    const requestedCount = parseInt(count as string) || 10;
-    const themeStr = theme as string;
-
-    console.log(`[BATCH] Request: rating=${minR}-${maxR}, count=${requestedCount}, theme=${themeStr}`);
-    console.log(`[BATCH] Themes: ${themeStr.split(',').map(t => t.trim()).filter(t => t.length > 0).join(', ')}`);
-
-    if (!themeStr) {
-      console.warn(`[BATCH] Missing required fields: theme=${themeStr}`);
-      return res.status(400).json({ error: "Theme is required." });
-    }
-
-    try {
-      const rawThemes = themeStr.split(',').map(t => t.trim()).filter(t => t.length > 0);
-      if (rawThemes.length === 0) {
-        return res.status(400).json({ error: "At least one valid theme is required." });
-      }
-
-      // Normalize themes: "Sicilian Defense" -> "sicilianDefense", "Checkmate" -> "mate"
-      const mappedThemes = rawThemes.map(t => {
-        if (t.toLowerCase() === 'checkmate') return 'mate';
-        if (t.toLowerCase() === 'opening') return 'opening';
-        if (t.toLowerCase() === 'middlegame') return 'middlegame';
-        if (t.toLowerCase() === 'endgame') return 'endgame';
-        
-        // Convert "Sicilian Defense" to "sicilianDefense"
-        const camelCase = t.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
-          return index === 0 ? word.toLowerCase() : word.toUpperCase();
-        }).replace(/\s+/g, '');
-        
-        return camelCase;
-      });
-      
-      const puzzles: any[] = [];
-      const puzzleIds = new Set<string>();
-      
-      console.log(`[BATCH] Searching DB for themes: ${mappedThemes.join(', ')} (from ${rawThemes.join(', ')}) between ${minR}-${maxR}`);
-      
-      // 0. Try BigQuery first if configured
-      const bigQueryTable = process.env.BIGQUERY_TABLE_ID;
-      if (bigQueryTable) {
-        console.log(`[BATCH] Attempting BigQuery fetch from ${bigQueryTable}`);
-        try {
-          const bq = getBigQuery();
-          const bqQuery = `
-            SELECT data
-            FROM \`${bigQueryTable}\`
-            WHERE theme IN UNNEST(@themes)
-            AND rating >= @minRating
-            AND rating <= @maxRating
-            ORDER BY RAND()
-            LIMIT @count
-          `;
-          const [rows] = await bq.query({
-            query: bqQuery,
-            params: { 
-              themes: mappedThemes, 
-              minRating: minR, 
-              maxRating: maxR, 
-              count: requestedCount 
-            }
-          });
-          
-          rows.forEach((row: any) => {
-            try {
-              const p = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
-              if (p && p.puzzle && !puzzleIds.has(p.puzzle.id)) {
-                puzzles.push(p);
-                puzzleIds.add(p.puzzle.id);
-              }
-            } catch (e) {}
-          });
-          console.log(`[BATCH] BigQuery found ${puzzles.length} puzzles.`);
-        } catch (bqErr: any) {
-          console.error(`[BATCH] BigQuery error:`, bqErr.message);
-        }
-      }
-
-      // 1. Fetch from DB reservoir for all themes
-      for (const t of mappedThemes) {
-        const countPerTheme = Math.ceil(requestedCount / mappedThemes.length);
-        
-        // Try both normalized and raw theme just in case
-        const rows = db.prepare('SELECT data FROM puzzles WHERE (theme = ? OR theme = ?) AND rating >= ? AND rating <= ? ORDER BY RANDOM() LIMIT ?')
-                     .all(t, rawThemes[mappedThemes.indexOf(t)], minR, maxR, countPerTheme) as { data: string }[];
-        
-        rows.forEach(row => {
-          try {
-            const p = JSON.parse(row.data);
-            if (!puzzleIds.has(p.puzzle.id)) {
-              puzzles.push(p);
-              puzzleIds.add(p.puzzle.id);
-            }
-          } catch (e) {}
-        });
-      }
-
-      console.log(`[BATCH] Found ${puzzles.length} puzzles in DB. Needed: ${requestedCount}`);
-
-      // 2. If not enough in reservoir, fetch more from Lichess
-      if (puzzles.length < requestedCount) {
-        const needed = requestedCount - puzzles.length;
-        const insertStmt = db.prepare('INSERT OR IGNORE INTO puzzles (id, theme, rating, data) VALUES (?, ?, ?, ?)');
-        
-        const startTime = Date.now();
-        const maxFetchTime = 15000; // 15 seconds max for Lichess fetches
-        
-        // Fetch in parallel
-        const fetchBatch = async (count: number) => {
-          const promises = Array.from({ length: count }).map(async (_, idx) => {
-            if (Date.now() - startTime > maxFetchTime) return null;
-            
-            const currentTheme = mappedThemes[(puzzles.length + idx) % mappedThemes.length];
-            try {
-              const themeParam = currentTheme === 'opening' ? '' : `?theme=${encodeURIComponent(currentTheme)}`;
-              const response = await fetch(`https://lichess.org/api/puzzle/next${themeParam}`, {
-                headers: { 
-                  'Accept': 'application/json',
-                  'User-Agent': 'OpenPecker/1.0 (ismail.helw@gmail.com)'
-                }
-              });
-              
-              if (response.ok) {
-                const puzzle = await response.json();
-                if (puzzle && puzzle.puzzle && puzzle.puzzle.id) {
-                  // Save for the primary theme used for fetching
-                  insertStmt.run(puzzle.puzzle.id, currentTheme, puzzle.puzzle.rating, JSON.stringify(puzzle));
-                  
-                  // Also save for all other themes associated with this puzzle
-                  if (Array.isArray(puzzle.puzzle.themes)) {
-                    for (const theme of puzzle.puzzle.themes) {
-                      if (theme !== currentTheme) {
-                        insertStmt.run(puzzle.puzzle.id, theme, puzzle.puzzle.rating, JSON.stringify(puzzle));
-                      }
-                    }
-                  }
-                  return puzzle;
-                }
-              }
-            } catch (e) {}
-            return null;
-          });
-          return Promise.all(promises);
-        };
-
-        // Fetch up to 10 puzzles from Lichess
-        const lichessPuzzles = await fetchBatch(Math.min(needed, 10));
-        lichessPuzzles.forEach(p => {
-          if (p && !puzzleIds.has(p.puzzle.id)) {
-            puzzles.push(p);
-            puzzleIds.add(p.puzzle.id);
-          }
-        });
-      }
-
-      // 3. Fallback: If still not enough, just get ANY puzzles from DB within rating range
-      if (puzzles.length < requestedCount) {
-        const needed = requestedCount - puzzles.length;
-        console.log(`[BATCH] Fallback: Searching DB for ${needed} puzzles in rating range ${minR}-${maxR}`);
-        const rows = db.prepare('SELECT data FROM puzzles WHERE rating >= ? AND rating <= ? ORDER BY RANDOM() LIMIT ?')
-                     .all(minR, maxR, needed) as { data: string }[];
-        
-        rows.forEach(row => {
-          try {
-            const p = JSON.parse(row.data);
-            if (!puzzleIds.has(p.puzzle.id)) {
-              puzzles.push(p);
-              puzzleIds.add(p.puzzle.id);
-            }
-          } catch (e) {}
-        });
-      }
-
-      // 4. Ultimate Fallback: If STILL not enough, ignore rating range and just get ANY puzzles
-      if (puzzles.length < requestedCount) {
-        const needed = requestedCount - puzzles.length;
-        console.log(`[BATCH] Ultimate Fallback: Ignoring rating range, getting ${needed} random puzzles`);
-        const rows = db.prepare('SELECT data FROM puzzles ORDER BY RANDOM() LIMIT ?')
-                     .all(needed) as { data: string }[];
-        
-        rows.forEach(row => {
-          try {
-            const p = JSON.parse(row.data);
-            if (!puzzleIds.has(p.puzzle.id)) {
-              puzzles.push(p);
-              puzzleIds.add(p.puzzle.id);
-            }
-          } catch (e) {}
-        });
-      }
-
-      console.log(`[BATCH] Final puzzle count: ${puzzles.length}`);
-
-      if (puzzles.length === 0) {
-        // Last resort: any puzzles at all
-        const rows = db.prepare('SELECT data FROM puzzles ORDER BY RANDOM() LIMIT ?')
-                     .all(requestedCount) as { data: string }[];
-        rows.forEach(row => {
-          try {
-            puzzles.push(JSON.parse(row.data));
-          } catch (e) {}
-        });
-      }
-
-      res.json({
-        status: "success",
-        puzzles: puzzles.sort(() => 0.5 - Math.random()).slice(0, requestedCount)
-      });
-    } catch (err: any) {
-      console.error("[BATCH] Global error:", err);
-      res.status(500).json({ status: "error", error: "Failed to fetch puzzle reservoir.", details: err.message });
-    }
-  });
-
   // Get repository stats
   app.get("/api/lichess/repository", (req, res) => {
     try {
@@ -933,6 +1034,11 @@ async function startServer() {
     }
   });
 
+  // Placeholder for lichess openings
+  app.get("/api/lichess/openings", async (req, res) => {
+    res.json({ data: [] });
+  });
+
   // Default health check for the API contract pattern
   app.get("/api/health", (req, res) => {
     res.json({ data: { status: "ok" } });
@@ -950,8 +1056,11 @@ async function startServer() {
   });
 
   // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
-    console.log("Starting Vite in development mode...");
+  const distPath = path.join(process.cwd(), "dist");
+  console.log(`[SERVER] Checking for dist at: ${distPath}`);
+  
+  if (process.env.NODE_ENV !== "production" || !fs.existsSync(distPath)) {
+    console.log("[SERVER] Starting Vite in development mode (dist not found or NODE_ENV != production)...");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
@@ -960,9 +1069,9 @@ async function startServer() {
   } else {
     console.log("Starting in production mode...");
     // Serve static files in production
-    app.use(express.static(path.join(__dirname, "dist")));
+    app.use(express.static(distPath));
     app.get("*", (req, res) => {
-      res.sendFile(path.join(__dirname, "dist", "index.html"));
+      res.sendFile(path.join(distPath, "index.html"));
     });
   }
 

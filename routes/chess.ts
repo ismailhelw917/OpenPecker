@@ -1,5 +1,5 @@
 import express from "express";
-import { Board } from "../src/lib/chessEngineV2";
+import { Board } from "../src/lib/chessEngineV2.ts";
 
 const router = express.Router();
 
