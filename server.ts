@@ -553,11 +553,11 @@ async function startServer() {
   });
 
   // BigQuery Puzzle Query
-  app.get("/api/bigquery/puzzles", async (req, res) => {
+  app.get(["/api/bigquery/puzzles", "/api/puzzles/batch"], async (req, res) => {
     const { theme, minRating, maxRating, count = 20 } = req.query;
     
     // Using the user's specific table path
-    const tableId = process.env.BIGQUERY_TABLE_ID || 'chess_data.puzzles';
+    const tableId = process.env.BIGQUERY_PUZZLES_TABLE || 'puzzles_data';
 
     // Standard SQL query using UNNEST for array themes and ORDER BY RAND()
     const query = `
@@ -583,13 +583,26 @@ async function startServer() {
       const bq = getBigQuery();
       const [rows] = await bq.query(options);
       
-      // Error handling: check if results are empty
       if (!rows || rows.length === 0) {
         return res.status(404).json({ 
           error: { 
             message: `No puzzles found for theme "${theme}" in the rating range ${minRating}-${maxRating}.`,
             code: "NO_RESULTS_FOUND" 
           } 
+        });
+      }
+
+      // Support legacy format if called via /api/puzzles/batch
+      if (req.path === "/api/puzzles/batch") {
+        return res.json({ 
+          puzzles: rows.map((p: any) => ({
+            id: p.puzzle_id,
+            fen: p.fen,
+            moves: p.moves,
+            rating: p.rating,
+            themes: p.themes,
+            color: p.color
+          })) 
         });
       }
 
@@ -600,6 +613,58 @@ async function startServer() {
         error: { 
           message: error.message, 
           code: "BIGQUERY_QUERY_ERROR" 
+        } 
+      });
+    }
+  });
+
+  // BigQuery Openings Query
+  app.get(["/api/bigquery/openings", "/api/lichess/openings"], async (req, res) => {
+    const tableId = process.env.BIGQUERY_OPENINGS_TABLE || 'openings_data';
+
+    const query = `
+      SELECT name, fen
+      FROM \`${tableId}\`
+      ORDER BY name ASC
+    `;
+
+    try {
+      const bq = getBigQuery();
+      const [rows] = await bq.query(query);
+      res.json({ data: rows });
+    } catch (error: any) {
+      console.error('[BIGQUERY ERROR]', error);
+      res.status(500).json({ 
+        error: { 
+          message: error.message, 
+          code: "BIGQUERY_OPENINGS_ERROR" 
+        } 
+      });
+    }
+  });
+
+  // BigQuery Stats Query
+  app.get(["/api/bigquery/puzzles/stats", "/api/lichess/repository"], async (req, res) => {
+    const tableId = process.env.BIGQUERY_PUZZLES_TABLE || 'puzzles_data';
+
+    // This query assumes themes is a repeated string (array)
+    const query = `
+      SELECT theme, COUNT(*) as count
+      FROM \`${tableId}\`, UNNEST(themes) as theme
+      GROUP BY theme
+      ORDER BY count DESC
+    `;
+
+    try {
+      const bq = getBigQuery();
+      const [rows] = await bq.query(query);
+      res.json({ data: rows });
+    } catch (error: any) {
+      console.error('[BIGQUERY ERROR]', error);
+      res.status(500).json({ 
+        error: { 
+          message: error.message, 
+          code: "BIGQUERY_STATS_ERROR" 
         } 
       });
     }

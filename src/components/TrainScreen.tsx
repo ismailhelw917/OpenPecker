@@ -4,6 +4,7 @@ import { useChessStore } from '../lib/state/chessStore';
 import { Screen } from '../types';
 import { Search, Lock, Play, Clock, Target, Repeat, Database, User, Download, CheckCircle2, Home, BarChart2, Settings } from 'lucide-react';
 import { ShareButton } from './ShareButton';
+import { fetchBigQueryPuzzles, fetchBigQueryOpenings } from '../bigQueryService';
 
 const PawnIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
   <svg 
@@ -244,8 +245,8 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
   const [allOpenings, setAllOpenings] = useState<any[]>([]);
 
   useEffect(() => {
-    // Fetch repository stats
-    fetch('/api/lichess/repository')
+    // Fetch repository stats - using internal endpoint
+    fetch('/api/bigquery/puzzles/stats')
       .then(res => res.json())
       .then(data => {
         if (data.data) {
@@ -258,9 +259,8 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
       })
       .catch(console.error);
 
-    // Fetch all openings
-    fetch('/api/lichess/openings')
-      .then(res => res.json())
+    // Fetch all openings using BigQuery service
+    fetchBigQueryOpenings()
       .then(data => {
         if (data.data) {
           setAllOpenings(data.data);
@@ -416,29 +416,32 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
         });
       }, 500);
 
-      console.log('Initiating fetch to:', `/api/puzzles/batch?theme=${encodeURIComponent(themes)}&count=${targetPuzzleCount}&minRating=${minRating}&maxRating=${maxRating}&color=${encodeURIComponent(colorFilter)}`);
+      console.log('Initiating fetch to BigQuery...');
       const fetchStartTime = Date.now();
-      const response = await fetch(`/api/puzzles/batch?theme=${encodeURIComponent(themes)}&count=${targetPuzzleCount}&minRating=${minRating}&maxRating=${maxRating}&color=${encodeURIComponent(colorFilter)}`, {
-        signal: controller.signal
-      });
-      console.log('Fetch completed. Response status:', response.status, 'Time taken:', Date.now() - fetchStartTime, 'ms');
       
-      const result = await response.json();
-      console.log('Fetch result parsed. Time taken:', Date.now() - fetchStartTime, 'ms');
+      const result = await fetchBigQueryPuzzles(
+        themes,
+        minRating,
+        maxRating,
+        targetPuzzleCount
+      );
       
-      if (!response.ok) {
-        throw new Error(`Fetch failed with status: ${response.status}`);
-      }
-
-      clearTimeout(timeoutId);
-      if (progressInterval) clearInterval(progressInterval);
-      setAbortController(null);
+      console.log('Fetch completed. Time taken:', Date.now() - fetchStartTime, 'ms');
       
       setLoadingProgress(100);
       setLoadingStatus('Puzzles ready!');
       
-      if (result.puzzles && Array.isArray(result.puzzles) && result.puzzles.length > 0) {
-        console.log('Puzzles fetched:', result.puzzles.length);
+      if (result.data && Array.isArray(result.data) && result.data.length > 0) {
+        const puzzles = result.data.map((p: any) => ({
+          id: p.puzzle_id,
+          fen: p.fen,
+          moves: p.moves,
+          rating: p.rating,
+          themes: p.themes,
+          color: p.color
+        }));
+
+        console.log('Puzzles fetched:', puzzles.length);
         
         let openingDisplay = '';
         if (selectedThemes.length > 0) {
@@ -465,12 +468,12 @@ export default function TrainScreen({ onStart, onShowPaywall, onNavigate }: Trai
           lastPlayedAt: new Date().toISOString(),
           bestAccuracy: 0,
           totalAttempts: 0,
-          puzzles: result.puzzles,
+          puzzles: puzzles,
         };
         
         setTimeout(() => {
-          console.log('Setting puzzles and starting session...', result.puzzles.length);
-          setPuzzles(result.puzzles);
+          console.log('Setting puzzles and starting session...', puzzles.length);
+          setPuzzles(puzzles);
           setCurrentPuzzleIndex(0);
           setCorrectCount(0);
           setStartTime(Date.now());
